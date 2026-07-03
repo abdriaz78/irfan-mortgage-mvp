@@ -67,14 +67,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Vantage & Co. — Mortgage & Insurance Advisory" },
+      { title: "Irfan — Mortgage & Insurance Advisory" },
       {
         name: "description",
         content:
           "FCA-regulated mortgage brokerage and protection specialist. Compare exclusive rates, check eligibility instantly, and manage your application in one secure portal.",
       },
       { name: "author", content: "Vantage & Co." },
-      { property: "og:title", content: "Vantage & Co. — Mortgage & Insurance Advisory" },
+      { property: "og:title", content: "Irfan — Mortgage & Insurance Advisory" },
       {
         property: "og:description",
         content:
@@ -82,6 +82,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Irfan — Mortgage & Insurance Advisory" },
+      { name: "description", content: "Secure Home Finance offers mortgage and insurance comparison, eligibility checks, and automated financial assessments." },
+      { property: "og:description", content: "Secure Home Finance offers mortgage and insurance comparison, eligibility checks, and automated financial assessments." },
+      { name: "twitter:description", content: "Secure Home Finance offers mortgage and insurance comparison, eligibility checks, and automated financial assessments." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c918d8ce-efea-40d8-9db0-90b66c0c97ac/id-preview-bec5d051--a4a8b33a-d115-4ecc-94a3-585f0bf43b21.lovable.app-1783088443932.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c918d8ce-efea-40d8-9db0-90b66c0c97ac/id-preview-bec5d051--a4a8b33a-d115-4ecc-94a3-585f0bf43b21.lovable.app-1783088443932.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
