@@ -4,7 +4,7 @@ import { Send, Sparkles, ThumbsUp, ThumbsDown, Copy } from "lucide-react";
 export const Route = createFileRoute("/chat")({
   head: () => ({
     meta: [
-      { title: "AI Advisor — Ask anything · Vantage & Co." },
+      { title: "AI Advisor — Ask anything · Fast Track Mortgages" },
       { name: "description", content: "24/7 AI advisor for mortgage and insurance FAQs, eligibility, document requirements, and process guidance." },
     ],
   }),

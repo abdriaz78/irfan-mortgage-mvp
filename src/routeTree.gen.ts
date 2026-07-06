@@ -10,21 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ResourcesRouteImport } from './routes/resources'
+import { Route as PortalRouteImport } from './routes/portal'
 import { Route as MortgagesRouteImport } from './routes/mortgages'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as InsuranceRouteImport } from './routes/insurance'
-import { Route as DocumentsRouteImport } from './routes/documents'
-import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComplianceRouteImport } from './routes/compliance'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as BookRouteImport } from './routes/book'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PortalIndexRouteImport } from './routes/portal.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as PortalInformationFormRouteImport } from './routes/portal.information-form'
+import { Route as PortalDocumentsRouteImport } from './routes/portal.documents'
+import { Route as AdminCasesCaseIdRouteImport } from './routes/admin.cases.$caseId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResourcesRoute = ResourcesRouteImport.update({
@@ -32,24 +44,24 @@ const ResourcesRoute = ResourcesRouteImport.update({
   path: '/resources',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MortgagesRoute = MortgagesRouteImport.update({
   id: '/mortgages',
   path: '/mortgages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InsuranceRoute = InsuranceRouteImport.update({
   id: '/insurance',
   path: '/insurance',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DocumentsRoute = DocumentsRouteImport.update({
-  id: '/documents',
-  path: '/documents',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ComplianceRoute = ComplianceRouteImport.update({
@@ -72,6 +84,11 @@ const BookRoute = BookRouteImport.update({
   path: '/book',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -82,20 +99,52 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalIndexRoute = PortalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PortalRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const PortalInformationFormRoute = PortalInformationFormRouteImport.update({
+  id: '/information-form',
+  path: '/information-form',
+  getParentRoute: () => PortalRoute,
+} as any)
+const PortalDocumentsRoute = PortalDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => PortalRoute,
+} as any)
+const AdminCasesCaseIdRoute = AdminCasesCaseIdRouteImport.update({
+  id: '/cases/$caseId',
+  path: '/cases/$caseId',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/book': typeof BookRoute
   '/chat': typeof ChatRoute
   '/compare': typeof CompareRoute
   '/compliance': typeof ComplianceRoute
-  '/dashboard': typeof DashboardRoute
-  '/documents': typeof DocumentsRoute
   '/insurance': typeof InsuranceRoute
+  '/login': typeof LoginRoute
   '/mortgages': typeof MortgagesRoute
+  '/portal': typeof PortalRouteWithChildren
   '/resources': typeof ResourcesRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/portal/documents': typeof PortalDocumentsRoute
+  '/portal/information-form': typeof PortalInformationFormRoute
+  '/admin/': typeof AdminIndexRoute
+  '/portal/': typeof PortalIndexRoute
+  '/admin/cases/$caseId': typeof AdminCasesCaseIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -104,43 +153,62 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/compare': typeof CompareRoute
   '/compliance': typeof ComplianceRoute
-  '/dashboard': typeof DashboardRoute
-  '/documents': typeof DocumentsRoute
   '/insurance': typeof InsuranceRoute
+  '/login': typeof LoginRoute
   '/mortgages': typeof MortgagesRoute
   '/resources': typeof ResourcesRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/portal/documents': typeof PortalDocumentsRoute
+  '/portal/information-form': typeof PortalInformationFormRoute
+  '/admin': typeof AdminIndexRoute
+  '/portal': typeof PortalIndexRoute
+  '/admin/cases/$caseId': typeof AdminCasesCaseIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
   '/book': typeof BookRoute
   '/chat': typeof ChatRoute
   '/compare': typeof CompareRoute
   '/compliance': typeof ComplianceRoute
-  '/dashboard': typeof DashboardRoute
-  '/documents': typeof DocumentsRoute
   '/insurance': typeof InsuranceRoute
+  '/login': typeof LoginRoute
   '/mortgages': typeof MortgagesRoute
+  '/portal': typeof PortalRouteWithChildren
   '/resources': typeof ResourcesRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/portal/documents': typeof PortalDocumentsRoute
+  '/portal/information-form': typeof PortalInformationFormRoute
+  '/admin/': typeof AdminIndexRoute
+  '/portal/': typeof PortalIndexRoute
+  '/admin/cases/$caseId': typeof AdminCasesCaseIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/about'
+    | '/admin'
     | '/book'
     | '/chat'
     | '/compare'
     | '/compliance'
-    | '/dashboard'
-    | '/documents'
     | '/insurance'
+    | '/login'
     | '/mortgages'
+    | '/portal'
     | '/resources'
+    | '/signup'
     | '/sitemap.xml'
+    | '/portal/documents'
+    | '/portal/information-form'
+    | '/admin/'
+    | '/portal/'
+    | '/admin/cases/$caseId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -149,40 +217,54 @@ export interface FileRouteTypes {
     | '/chat'
     | '/compare'
     | '/compliance'
-    | '/dashboard'
-    | '/documents'
     | '/insurance'
+    | '/login'
     | '/mortgages'
     | '/resources'
+    | '/signup'
     | '/sitemap.xml'
+    | '/portal/documents'
+    | '/portal/information-form'
+    | '/admin'
+    | '/portal'
+    | '/admin/cases/$caseId'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/admin'
     | '/book'
     | '/chat'
     | '/compare'
     | '/compliance'
-    | '/dashboard'
-    | '/documents'
     | '/insurance'
+    | '/login'
     | '/mortgages'
+    | '/portal'
     | '/resources'
+    | '/signup'
     | '/sitemap.xml'
+    | '/portal/documents'
+    | '/portal/information-form'
+    | '/admin/'
+    | '/portal/'
+    | '/admin/cases/$caseId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRouteWithChildren
   BookRoute: typeof BookRoute
   ChatRoute: typeof ChatRoute
   CompareRoute: typeof CompareRoute
   ComplianceRoute: typeof ComplianceRoute
-  DashboardRoute: typeof DashboardRoute
-  DocumentsRoute: typeof DocumentsRoute
   InsuranceRoute: typeof InsuranceRoute
+  LoginRoute: typeof LoginRoute
   MortgagesRoute: typeof MortgagesRoute
+  PortalRoute: typeof PortalRouteWithChildren
   ResourcesRoute: typeof ResourcesRoute
+  SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
@@ -195,11 +277,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/resources': {
       id: '/resources'
       path: '/resources'
       fullPath: '/resources'
       preLoaderRoute: typeof ResourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mortgages': {
@@ -209,25 +305,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MortgagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/insurance': {
       id: '/insurance'
       path: '/insurance'
       fullPath: '/insurance'
       preLoaderRoute: typeof InsuranceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/documents': {
-      id: '/documents'
-      path: '/documents'
-      fullPath: '/documents'
-      preLoaderRoute: typeof DocumentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compliance': {
@@ -258,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -272,21 +368,85 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/': {
+      id: '/portal/'
+      path: '/'
+      fullPath: '/portal/'
+      preLoaderRoute: typeof PortalIndexRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/portal/information-form': {
+      id: '/portal/information-form'
+      path: '/information-form'
+      fullPath: '/portal/information-form'
+      preLoaderRoute: typeof PortalInformationFormRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/portal/documents': {
+      id: '/portal/documents'
+      path: '/documents'
+      fullPath: '/portal/documents'
+      preLoaderRoute: typeof PortalDocumentsRouteImport
+      parentRoute: typeof PortalRoute
+    }
+    '/admin/cases/$caseId': {
+      id: '/admin/cases/$caseId'
+      path: '/cases/$caseId'
+      fullPath: '/admin/cases/$caseId'
+      preLoaderRoute: typeof AdminCasesCaseIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminCasesCaseIdRoute: typeof AdminCasesCaseIdRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+  AdminCasesCaseIdRoute: AdminCasesCaseIdRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface PortalRouteChildren {
+  PortalDocumentsRoute: typeof PortalDocumentsRoute
+  PortalInformationFormRoute: typeof PortalInformationFormRoute
+  PortalIndexRoute: typeof PortalIndexRoute
+}
+
+const PortalRouteChildren: PortalRouteChildren = {
+  PortalDocumentsRoute: PortalDocumentsRoute,
+  PortalInformationFormRoute: PortalInformationFormRoute,
+  PortalIndexRoute: PortalIndexRoute,
+}
+
+const PortalRouteWithChildren =
+  PortalRoute._addFileChildren(PortalRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AdminRoute: AdminRouteWithChildren,
   BookRoute: BookRoute,
   ChatRoute: ChatRoute,
   CompareRoute: CompareRoute,
   ComplianceRoute: ComplianceRoute,
-  DashboardRoute: DashboardRoute,
-  DocumentsRoute: DocumentsRoute,
   InsuranceRoute: InsuranceRoute,
+  LoginRoute: LoginRoute,
   MortgagesRoute: MortgagesRoute,
+  PortalRoute: PortalRouteWithChildren,
   ResourcesRoute: ResourcesRoute,
+  SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport

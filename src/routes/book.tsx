@@ -5,7 +5,7 @@ import advisorPortrait from "@/assets/advisor-portrait.jpg";
 export const Route = createFileRoute("/book")({
   head: () => ({
     meta: [
-      { title: "Book a Consultation · Vantage & Co." },
+      { title: "Book a Consultation · Fast Track Mortgages" },
       { name: "description", content: "Book a 45-minute consultation with a regulated mortgage or protection advisor — video, phone, or in person." },
     ],
   }),

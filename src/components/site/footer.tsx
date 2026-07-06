@@ -7,7 +7,7 @@ export function SiteFooter() {
         <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-16">
           <div className="max-w-[40ch]">
             <span className="text-lg font-semibold tracking-tight text-zinc-50 block mb-4 font-display">
-              Vantage &amp; Co.
+              Fast Track Mortgages
             </span>
             <p className="text-sm leading-relaxed">
               Specialist mortgage and protection advice tailored to professional requirements.
@@ -42,7 +42,7 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="pt-8 border-t border-zinc-800 text-[10px] flex flex-col md:flex-row justify-between gap-3 uppercase tracking-widest">
-          <span>© 2026 Vantage &amp; Co. All rights reserved.</span>
+          <span>© 2026 Fast Track Mortgages. All rights reserved.</span>
           <span>Your home may be repossessed if you do not keep up repayments.</span>
         </div>
       </div>

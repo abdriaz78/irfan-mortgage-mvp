@@ -4,8 +4,8 @@ import { ShieldCheck, Lock, FileCheck2, Scale } from "lucide-react";
 export const Route = createFileRoute("/compliance")({
   head: () => ({
     meta: [
-      { title: "Compliance, Privacy & Legal · Vantage & Co." },
-      { name: "description", content: "FCA disclosure, privacy policy, cookie policy, GDPR compliance, and secure document handling for Vantage & Co." },
+      { title: "Compliance, Privacy & Legal · Fast Track Mortgages" },
+      { name: "description", content: "FCA disclosure, privacy policy, cookie policy, GDPR compliance, and secure document handling for Fast Track Mortgages." },
     ],
   }),
   component: CompliancePage,
@@ -73,7 +73,7 @@ const SECTIONS = [
   {
     id: "fca", eyebrow: "Regulation", title: "FCA Disclosure",
     body: [
-      "Vantage & Co. Financial Services Ltd is authorised and regulated by the Financial Conduct Authority (FCA) under reference number 000000. You can verify our status on the FCA register at register.fca.org.uk.",
+      "Fast Track Mortgages Financial Services Ltd is authorised and regulated by the Financial Conduct Authority (FCA) under reference number 000000. You can verify our status on the FCA register at register.fca.org.uk.",
       "We are a whole-of-market mortgage and protection broker. We do not charge you a broker fee for standard residential mortgages or protection products; we are remunerated by commission from lenders and insurers, which we disclose in full before you commit.",
     ],
   },

@@ -23,7 +23,7 @@ import { SectionHeading } from "@/components/site/section-heading";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Vantage & Co. — Compare Mortgage & Insurance Solutions in Minutes" },
+      { title: "Fast Track Mortgages — Compare Mortgage & Insurance Solutions in Minutes" },
       {
         name: "description",
         content:
@@ -238,8 +238,8 @@ function Home() {
                 </li>
               ))}
             </ul>
-            <Link to="/dashboard" className="inline-flex items-center gap-2 bg-primary-foreground text-ink py-3 px-5 rounded-lg text-sm font-medium hover:bg-primary-foreground/90 transition-colors">
-              View client dashboard <ArrowRight className="size-4" />
+            <Link to="/portal" className="inline-flex items-center gap-2 bg-primary-foreground text-ink py-3 px-5 rounded-lg text-sm font-medium hover:bg-primary-foreground/90 transition-colors">
+              View client portal <ArrowRight className="size-4" />
             </Link>
           </div>
           <div className="relative">

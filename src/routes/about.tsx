@@ -5,7 +5,7 @@ import familyLifestyle from "@/assets/family-lifestyle.jpg";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About — Vantage & Co. Mortgage & Insurance Brokerage" },
+      { title: "About — Fast Track Mortgages Mortgage & Insurance Brokerage" },
       { name: "description", content: "Independent, whole-of-market mortgage and protection advice. FCA-regulated. Based in London. Serving clients across the UK." },
     ],
   }),

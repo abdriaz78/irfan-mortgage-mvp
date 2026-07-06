@@ -11,9 +11,11 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AuthProvider } from "../lib/auth-context";
 import { SiteNav } from "../components/site/nav";
 import { SiteFooter } from "../components/site/footer";
 import { ChatBubble } from "../components/site/chat-bubble";
+import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -73,7 +75,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "FCA-regulated mortgage brokerage and protection specialist. Compare exclusive rates, check eligibility instantly, and manage your application in one secure portal.",
       },
-      { name: "author", content: "Vantage & Co." },
+      { name: "author", content: "Fast Track Mortgages" },
       { property: "og:title", content: "Irfan — Mortgage & Insurance Advisory" },
       {
         property: "og:description",
@@ -124,14 +126,17 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen flex flex-col">
-        <SiteNav />
-        <main className="flex-1">
-          <Outlet />
-        </main>
-        <SiteFooter />
-        <ChatBubble />
-      </div>
+      <AuthProvider>
+        <div className="min-h-screen flex flex-col">
+          <SiteNav />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+          <SiteFooter />
+          <ChatBubble />
+          <Toaster position="top-right" />
+        </div>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
