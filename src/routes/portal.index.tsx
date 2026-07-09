@@ -6,16 +6,26 @@ import {
   ClipboardList,
   ChevronRight,
   CheckCircle2,
+  Clock,
+  UploadCloud,
+  AlertCircle,
   PartyPopper,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { useMyCase } from "@/hooks/use-my-case";
-import { CASE_STAGES, TOTAL_STAGES, getStage } from "@/lib/case-stages";
+import { CASE_STAGES, TOTAL_STAGES, getStage, REQUIRED_DOCUMENT_TYPES } from "@/lib/case-stages";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { NotificationRow, CaseRequestRow } from "@/lib/database.types";
+import type { NotificationRow, CaseRequestRow, DocumentRow } from "@/lib/database.types";
+
+// Stages the client is responsible for; when they submit their part these
+// enter a "pending advisor approval" state until the admin advances the case.
+const INFORMATION_FORM_STAGE = 2;
+const DOCUMENT_UPLOAD_STAGE = 3;
+
+type DocSummary = Pick<DocumentRow, "document_type" | "status">;
 
 export const Route = createFileRoute("/portal/")({
   head: () => ({ meta: [{ title: "Your Case · Fast Track Mortgages" }] }),
@@ -27,6 +37,8 @@ function PortalPage() {
   const { case: myCase, loading: caseLoading } = useMyCase();
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [openRequests, setOpenRequests] = useState<CaseRequestRow[]>([]);
+  const [infoSubmittedAt, setInfoSubmittedAt] = useState<string | null>(null);
+  const [documents, setDocuments] = useState<DocSummary[]>([]);
   const [loadingExtras, setLoadingExtras] = useState(true);
 
   useEffect(() => {
@@ -36,22 +48,31 @@ function PortalPage() {
       return;
     }
     (async () => {
-      const [{ data: notifs }, { data: requests }] = await Promise.all([
-        supabase
-          .from("notifications")
-          .select("*")
-          .eq("case_id", myCase.id)
-          .order("created_at", { ascending: false })
-          .limit(20),
-        supabase
-          .from("case_requests")
-          .select("*")
-          .eq("case_id", myCase.id)
-          .eq("status", "open")
-          .order("created_at", { ascending: false }),
-      ]);
+      const [{ data: notifs }, { data: requests }, { data: form }, { data: docs }] =
+        await Promise.all([
+          supabase
+            .from("notifications")
+            .select("*")
+            .eq("case_id", myCase.id)
+            .order("created_at", { ascending: false })
+            .limit(20),
+          supabase
+            .from("case_requests")
+            .select("*")
+            .eq("case_id", myCase.id)
+            .eq("status", "open")
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("information_form_responses")
+            .select("submitted_at")
+            .eq("case_id", myCase.id)
+            .maybeSingle(),
+          supabase.from("documents").select("document_type, status").eq("case_id", myCase.id),
+        ]);
       setNotifications(notifs ?? []);
       setOpenRequests(requests ?? []);
+      setInfoSubmittedAt(form?.submitted_at ?? null);
+      setDocuments(docs ?? []);
       setLoadingExtras(false);
     })();
   }, [caseLoading, myCase?.id]);
@@ -81,10 +102,45 @@ function PortalPage() {
     );
   }
 
-  const currentStage = getStage(myCase.current_stage);
+  const stageNo = myCase.current_stage;
+  const currentStage = getStage(stageNo);
   const unreadCount = notifications.filter((n) => !n.read).length;
-  const progressPct = Math.round((myCase.current_stage / TOTAL_STAGES) * 100);
-  const isComplete = myCase.current_stage === TOTAL_STAGES;
+  const progressPct = Math.round((stageNo / TOTAL_STAGES) * 100);
+  const isComplete = stageNo === TOTAL_STAGES;
+
+  // Document tallies (only the required set counts toward "complete").
+  const uploadedRequired = REQUIRED_DOCUMENT_TYPES.filter((t) =>
+    documents.some((d) => d.document_type === t),
+  ).length;
+  const verifiedRequired = REQUIRED_DOCUMENT_TYPES.filter((t) =>
+    documents.some((d) => d.document_type === t && d.status === "verified"),
+  ).length;
+  const awaitingApproval = documents.filter((d) => d.status === "pending").length;
+  const rejectedCount = documents.filter((d) => d.status === "rejected").length;
+  const noDocsUploaded = documents.length === 0;
+  const allRequiredUploaded = uploadedRequired === REQUIRED_DOCUMENT_TYPES.length;
+
+  // A client-owned step is "pending" once they've submitted their part but the
+  // advisor hasn't approved it yet — i.e. the case hasn't advanced past that
+  // step. This is independent of the exact current stage, because a client can
+  // complete their form/uploads while the case is still at an earlier stage.
+  const infoStepPending = !!infoSubmittedAt && stageNo <= INFORMATION_FORM_STAGE;
+  const documentsStepPending =
+    allRequiredUploaded && verifiedRequired < uploadedRequired && stageNo <= DOCUMENT_UPLOAD_STAGE;
+  const pendingStepLabel = documentsStepPending
+    ? "Document Upload"
+    : infoStepPending
+      ? "Information Form"
+      : null;
+
+  type StageVisual = "done" | "pending" | "active" | "upcoming";
+  const stageVisual = (n: number): StageVisual => {
+    if (n < stageNo) return "done";
+    if (n === INFORMATION_FORM_STAGE && infoStepPending) return "pending";
+    if (n === DOCUMENT_UPLOAD_STAGE && documentsStepPending) return "pending";
+    if (n === stageNo) return "active";
+    return "upcoming";
+  };
 
   return (
     <section className="py-12">
@@ -114,36 +170,82 @@ function PortalPage() {
                 <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">
                   Case {myCase.case_number}
                 </div>
-                <h2 className="text-lg font-semibold">{currentStage.title}</h2>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-lg font-semibold">{currentStage.title}</h2>
+                  {pendingStepLabel && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider">
+                      <Clock className="size-3 motion-safe:animate-pulse" /> {pendingStepLabel} ·
+                      awaiting approval
+                    </span>
+                  )}
+                </div>
               </div>
               <Badge variant="secondary">{progressPct}% complete</Badge>
             </div>
 
-            <p className="text-sm text-muted-foreground mb-6">{currentStage.clientDescription}</p>
+            <p className="text-sm text-muted-foreground mb-6">
+              {pendingStepLabel
+                ? `You've submitted your ${pendingStepLabel}. Your advisor will review it and approve the next step shortly.`
+                : currentStage.clientDescription}
+            </p>
 
             <div className="mb-6">
-              <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-brand transition-all"
-                  style={{ width: `${progressPct}%` }}
-                />
+              <div className="flex gap-1 mb-1.5">
+                {CASE_STAGES.map((s) => {
+                  const v = stageVisual(s.number);
+                  const num =
+                    v === "done"
+                      ? "text-emerald-600"
+                      : v === "pending"
+                        ? "text-amber-600"
+                        : v === "active"
+                          ? "text-brand"
+                          : "text-muted-foreground/50";
+                  return (
+                    <div
+                      key={s.key}
+                      className={`flex-1 text-center text-[11px] font-semibold tabular-nums ${num}`}
+                    >
+                      {s.number}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex gap-1 h-2">
+                {CASE_STAGES.map((s) => {
+                  const v = stageVisual(s.number);
+                  const bar =
+                    v === "done"
+                      ? "bg-emerald-500"
+                      : v === "pending"
+                        ? "bg-amber-400 motion-safe:animate-pulse"
+                        : v === "active"
+                          ? "bg-brand"
+                          : "bg-secondary";
+                  return (
+                    <div key={s.key} className={`flex-1 rounded-full transition-all ${bar}`} />
+                  );
+                })}
               </div>
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-y-3 gap-x-2 text-[10px] uppercase font-semibold tracking-widest">
-                {CASE_STAGES.map((s) => (
-                  <div
-                    key={s.key}
-                    className={
-                      s.number < myCase.current_stage
-                        ? "text-brand flex items-center gap-1"
-                        : s.number === myCase.current_stage
-                          ? "text-brand-accent flex items-center gap-1"
-                          : "text-muted-foreground flex items-center gap-1"
-                    }
-                  >
-                    {s.number < myCase.current_stage && <CheckCircle2 className="size-3" />}
-                    {s.number}. {s.title}
-                  </div>
-                ))}
+                {CASE_STAGES.map((s) => {
+                  const v = stageVisual(s.number);
+                  const cls =
+                    v === "done"
+                      ? "text-emerald-600"
+                      : v === "pending"
+                        ? "text-amber-600"
+                        : v === "active"
+                          ? "text-brand-accent"
+                          : "text-muted-foreground";
+                  return (
+                    <div key={s.key} className={`flex items-center gap-1 ${cls}`}>
+                      {v === "done" && <CheckCircle2 className="size-3" />}
+                      {v === "pending" && <Clock className="size-3 motion-safe:animate-pulse" />}
+                      {s.number}. {s.title}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -157,33 +259,118 @@ function PortalPage() {
           </div>
 
           {/* Requests / to-dos */}
-          <div className="bg-ink text-primary-foreground p-8 rounded-2xl">
+          <div className="bg-ink text-primary-foreground p-8 rounded-2xl flex flex-col">
             <div className="flex items-center gap-3 mb-6">
               <div className="size-10 rounded-lg bg-white/10 text-brand-accent grid place-items-center">
                 <ClipboardList className="size-5" />
               </div>
               <h2 className="text-lg font-semibold">Action needed</h2>
             </div>
-            {openRequests.length === 0 ? (
-              <p className="text-sm text-zinc-400">Nothing outstanding right now.</p>
-            ) : (
-              <ul className="space-y-4">
-                {openRequests.map((r) => (
-                  <li
-                    key={r.id}
-                    className="pb-4 border-b border-white/10 last:border-b-0 last:pb-0"
-                  >
-                    <div className="text-sm font-semibold capitalize">{r.type} request</div>
-                    <div className="text-xs text-zinc-400 mt-1">{r.description}</div>
-                  </li>
-                ))}
-              </ul>
-            )}
+
+            <div className="space-y-4 flex-1">
+              {/* Incomplete information form */}
+              {!infoSubmittedAt && (
+                <Link
+                  to="/portal/information-form"
+                  className="block pb-4 border-b border-white/10 group"
+                >
+                  <div className="text-sm font-semibold flex items-center gap-2">
+                    <ClipboardList className="size-4 text-brand-accent" /> Complete your Information
+                    Form
+                  </div>
+                  <div className="text-xs text-zinc-400 mt-1">
+                    We need this before we can assess your application.
+                  </div>
+                </Link>
+              )}
+
+              {/* Advisor / lender requests */}
+              {openRequests.map((r) => (
+                <div key={r.id} className="pb-4 border-b border-white/10">
+                  <div className="text-sm font-semibold capitalize flex items-center gap-2">
+                    <AlertCircle className="size-4 text-amber-300" /> {r.type} request
+                  </div>
+                  <div className="text-xs text-zinc-400 mt-1">{r.description}</div>
+                </div>
+              ))}
+
+              {/* Documents */}
+              {noDocsUploaded ? (
+                <Link
+                  to="/portal/documents"
+                  className="block rounded-xl bg-white/5 ring-1 ring-white/10 p-4 hover:bg-white/10 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="grid size-10 place-items-center rounded-full bg-brand-accent/15 text-brand-accent shrink-0">
+                      <UploadCloud className="size-5 motion-safe:animate-bounce" />
+                    </span>
+                    <div>
+                      <div className="text-sm font-semibold">Upload your documents</div>
+                      <div className="text-xs text-zinc-400 mt-0.5">
+                        You haven't uploaded any documents yet — tap to get started.
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between text-xs text-zinc-400 mb-2">
+                    <span className="uppercase tracking-widest">Documents</span>
+                    <span>
+                      {uploadedRequired}/{REQUIRED_DOCUMENT_TYPES.length} uploaded
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-brand-accent transition-all"
+                      style={{
+                        width: `${(uploadedRequired / REQUIRED_DOCUMENT_TYPES.length) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-[11px] font-medium">
+                    {awaitingApproval > 0 && (
+                      <span className="inline-flex items-center gap-1 text-amber-300">
+                        <Clock className="size-3" /> {awaitingApproval} awaiting approval
+                      </span>
+                    )}
+                    {verifiedRequired > 0 && (
+                      <span className="inline-flex items-center gap-1 text-emerald-300">
+                        <CheckCircle2 className="size-3" /> {verifiedRequired} verified
+                      </span>
+                    )}
+                    {rejectedCount > 0 && (
+                      <span className="inline-flex items-center gap-1 text-red-300">
+                        <AlertCircle className="size-3" /> {rejectedCount} need re-upload
+                      </span>
+                    )}
+                  </div>
+                  {!allRequiredUploaded && (
+                    <div className="text-xs text-zinc-400 mt-2">
+                      {REQUIRED_DOCUMENT_TYPES.length - uploadedRequired} more required document
+                      {REQUIRED_DOCUMENT_TYPES.length - uploadedRequired === 1 ? "" : "s"} to
+                      upload.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* All clear */}
+              {infoSubmittedAt && openRequests.length === 0 && allRequiredUploaded && (
+                <p className="text-sm text-zinc-400">
+                  {awaitingApproval > 0
+                    ? "You're all caught up — your advisor is reviewing your submissions."
+                    : "Nothing outstanding right now."}
+                </p>
+              )}
+            </div>
+
             <Link
               to="/portal/documents"
               className="mt-6 inline-flex items-center gap-1 text-xs font-semibold text-brand-accent"
             >
-              Upload documents <ChevronRight className="size-3" />
+              {noDocsUploaded ? "Go to documents" : "Manage documents"}{" "}
+              <ChevronRight className="size-3" />
             </Link>
           </div>
 

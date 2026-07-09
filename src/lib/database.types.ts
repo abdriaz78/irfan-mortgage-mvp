@@ -61,6 +61,8 @@ export interface InformationFormResponse {
   deposit_amount: number | null;
   mortgage_type: string | null;
   purchase_timeline: string | null;
+  // Full Fast Track questionnaire payload; shape defined in lib/information-form.ts.
+  details: import("./information-form").InformationFormDetails | null;
   submitted_at: string | null;
   updated_at: string;
 }

@@ -24,6 +24,11 @@ import type {
   CaseStageHistoryRow,
   RequestType,
 } from "@/lib/database.types";
+import type {
+  AddressDetails,
+  ApplicantDetails,
+  InformationFormDetails,
+} from "@/lib/information-form";
 
 export const Route = createFileRoute("/admin/cases/$caseId")({
   head: () => ({ meta: [{ title: "Case detail · Admin" }] }),
@@ -185,12 +190,262 @@ function StageMover({ caseRow, onMoved }: { caseRow: CaseRow; onMoved: () => voi
   );
 }
 
+function dash(v: string | undefined | null): string {
+  return v && String(v).trim() !== "" ? String(v) : "—";
+}
+
+function money(v: string | number | undefined | null): string {
+  if (v === undefined || v === null || v === "") return "—";
+  return `£${v}`;
+}
+
+function formatAddress(a: AddressDetails | undefined): string {
+  if (!a) return "—";
+  const parts = [a.line1, a.line2, a.city, a.county, a.postcode, a.country].filter(
+    (p) => p && p.trim() !== "",
+  );
+  return parts.length ? parts.join(", ") : "—";
+}
+
+function DetailGrid({ rows }: { rows: [string, string][] }) {
+  const shown = rows.filter(([, value]) => value !== "—");
+  if (!shown.length) return null;
+  return (
+    <dl className="grid sm:grid-cols-2 gap-x-8">
+      {shown.map(([label, value]) => (
+        <div
+          key={label}
+          className="flex justify-between py-2 gap-4 text-sm border-b border-border/60"
+        >
+          <dt className="text-muted-foreground">{label}</dt>
+          <dd className="font-medium text-right break-words">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function DetailBlock({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+}
+
+function ApplicantDetailView({ a, label }: { a: ApplicantDetails; label: string }) {
+  const name = [a.first_name, a.middle_name, a.last_name].filter(Boolean).join(" ");
+  const emp = a.employment;
+  const isSelfEmployed = emp.status === "Self-employed";
+  return (
+    <div className="space-y-4 rounded-xl bg-secondary/30 p-4">
+      <h3 className="text-sm font-semibold">{label}</h3>
+      <DetailBlock title="Personal">
+        <DetailGrid
+          rows={[
+            ["Name", dash(`${a.title} ${name}`.trim())],
+            ["Date of birth", dash(a.date_of_birth)],
+            ["Residential status", dash(a.residential_status)],
+            ["Current address", formatAddress(a.current_address)],
+            ["Date moved in", dash(a.date_moved_in)],
+            ["Previous address", formatAddress(a.previous_address)],
+            ["Home phone", dash(a.home_phone)],
+            ["Mobile", dash(a.mobile)],
+            ["Email", dash(a.email)],
+            ["Marital status", dash(a.marital_status)],
+            ["NIN", dash(a.nin)],
+            ["Nationality", dash(a.nationality)],
+            ["Right to reside", dash(a.residency_status)],
+            ["Visa / status", dash(a.visa_type)],
+            ["First moved to UK", dash(a.uk_arrival_date)],
+          ]}
+        />
+      </DetailBlock>
+      <DetailBlock title="Employment & income">
+        <DetailGrid
+          rows={[
+            ["Employment status", dash(emp.status)],
+            [isSelfEmployed ? "Business name" : "Employer", dash(emp.employer_name)],
+            ["Job title", dash(emp.job_title)],
+            ["Start date", dash(emp.start_date)],
+            ["Work phone", dash(emp.work_phone)],
+            ["Address", formatAddress(emp.employer_address)],
+            ...(isSelfEmployed
+              ? ([
+                  ["Net profit (recent yr)", money(emp.net_profit_year1)],
+                  ["Net profit (prior yr)", money(emp.net_profit_year2)],
+                  ["Net profit (3 yrs ago)", money(emp.net_profit_year3)],
+                ] as [string, string][])
+              : ([["Gross salary", money(emp.gross_salary)]] as [string, string][])),
+            ["Previous employer", dash(emp.previous_employment.employer_name)],
+          ]}
+        />
+      </DetailBlock>
+      {a.receives_benefits === "Yes" && (
+        <DetailBlock title="Benefits">
+          <DetailGrid
+            rows={[
+              ["Universal Credit (last mo)", money(a.benefits.universal_credit_last_month)],
+              ["Universal Credit (prev mo)", money(a.benefits.universal_credit_previous_month)],
+              ["Universal Credit (prior mo)", money(a.benefits.universal_credit_prior_month)],
+              ["PIP / DLA", money(a.benefits.pip_dla)],
+              ["Child benefit (annual)", money(a.benefits.child_benefit_annual)],
+              ["Carer's Allowance", money(a.benefits.carers_allowance)],
+              ["Other benefits", dash(a.benefits.other_benefits)],
+              ["Paid to", dash(a.benefits.paid_to)],
+            ]}
+          />
+        </DetailBlock>
+      )}
+    </div>
+  );
+}
+
+function FullInformationForm({ d }: { d: InformationFormDetails }) {
+  const loan = d.loan;
+  const isRemortgage = d.purchase_or_remortgage === "Remortgage";
+  const c = d.commitments;
+  return (
+    <div className="space-y-6">
+      <DetailBlock title="Overview">
+        <DetailGrid
+          rows={[
+            [
+              "Type",
+              dash([d.residential_or_btl, d.purchase_or_remortgage].filter(Boolean).join(" ")),
+            ],
+            ["First-time buyer", dash(d.first_time_buyer)],
+            ["Purchase stage", dash(d.purchase_stage)],
+            ["Applied elsewhere", dash(d.applied_elsewhere)],
+            ["Outcome", dash(d.applied_outcome)],
+            ["Properties owned", dash(d.properties_owned)],
+            ["Of which mortgaged", dash(d.properties_mortgaged)],
+            ["Other adult occupants", dash(d.other_adult_occupants)],
+            ["Expected retirement age", dash(d.expected_retirement_age)],
+          ]}
+        />
+      </DetailBlock>
+
+      <ApplicantDetailView a={d.applicant1} label="Applicant 1" />
+      {d.has_second_applicant && <ApplicantDetailView a={d.applicant2} label="Applicant 2" />}
+
+      {d.dependents.length > 0 && (
+        <DetailBlock title="Dependents">
+          <DetailGrid
+            rows={d.dependents.map((dep, i) => [
+              `Dependent ${i + 1}`,
+              `${dash(dep.name)}${dep.date_of_birth ? ` (DOB ${dep.date_of_birth})` : ""}`,
+            ])}
+          />
+        </DetailBlock>
+      )}
+
+      <DetailBlock title="Monthly commitments">
+        <DetailGrid
+          rows={[
+            ["Current rent / mortgage", money(c.current_housing_cost)],
+            ["Credit cards", money(c.credit_cards)],
+            ["Personal loans", money(c.loans)],
+            ["Car finance", money(c.car_finance)],
+            ["Childcare", money(c.childcare)],
+            ["Other", money(c.other)],
+          ]}
+        />
+      </DetailBlock>
+
+      <DetailBlock title="Credit history">
+        <DetailGrid
+          rows={[
+            ["CCJs", dash(d.credit.has_ccjs)],
+            ["Defaults", dash(d.credit.has_defaults)],
+            ["Missed / late payments", dash(d.credit.has_missed_payments)],
+            ["Bankruptcy / IVA", dash(d.credit.has_bankruptcy_or_iva)],
+            ["Details", dash(d.credit.notes)],
+          ]}
+        />
+      </DetailBlock>
+
+      <DetailBlock title="Loan & property">
+        <DetailGrid
+          rows={[
+            ["Property value", money(loan.property_value)],
+            ...(isRemortgage
+              ? ([
+                  ["Current lender", dash(loan.current_lender)],
+                  ["Outstanding balance", money(loan.outstanding_balance)],
+                  ["Capital-raising purpose", dash(loan.remortgage_purpose)],
+                ] as [string, string][])
+              : ([
+                  ["Purchase price", money(loan.purchase_price)],
+                  ["Deposit — savings", money(loan.deposit.savings)],
+                  ["Deposit — asset sale", money(loan.deposit.asset_sale_amount)],
+                  ["Deposit — gifts", money(loan.deposit.gift_amount)],
+                  ["Deposit — family gifts", money(loan.deposit.family_gifts)],
+                  ["Gift donor", dash(loan.deposit.gift_donor_name)],
+                  ["Gift donor relationship", dash(loan.deposit.gift_donor_relationship)],
+                ] as [string, string][])),
+            ["Mortgage required", money(loan.mortgage_required)],
+            ["Term (years)", dash(loan.term_years)],
+            ["Fixed term", dash(loan.fixed_term)],
+            ["Repayment method", dash(loan.repayment_method)],
+            ["Budget", money(loan.budget)],
+            ["Fee arrangement", dash(loan.fee_arrangement)],
+            ["Property address", formatAddress(loan.property_address)],
+            ["Property type", dash(loan.property_type)],
+            ["Bedrooms", dash(loan.bedrooms)],
+            ["Near commercial premises", dash(loan.near_commercial)],
+            ...(isRemortgage
+              ? ([] as [string, string][])
+              : ([
+                  ["Estate agent", dash(loan.estate_agent.name)],
+                  ["Seller", dash(loan.seller.name)],
+                  ["Seller relationship", dash(loan.seller.relationship)],
+                ] as [string, string][])),
+            ["Convictions", dash(loan.convictions)],
+            ["Additional info", dash(loan.additional_info)],
+          ]}
+        />
+      </DetailBlock>
+
+      <DetailBlock title="Declarations">
+        <DetailGrid
+          rows={[
+            ["Data-processing consent", d.consent_data_processing ? "Agreed" : "—"],
+            ["Credit-search consent", d.consent_credit_search ? "Agreed" : "—"],
+          ]}
+        />
+      </DetailBlock>
+    </div>
+  );
+}
+
 function InformationFormSummary({ infoForm }: { infoForm: InformationFormResponse | null }) {
   if (!infoForm) {
     return (
       <div className="bg-card p-6 rounded-2xl ring-1 ring-border">
         <h2 className="text-lg font-semibold mb-2">Information form</h2>
         <p className="text-sm text-muted-foreground">The client hasn't submitted this yet.</p>
+      </div>
+    );
+  }
+
+  // New rows carry the full questionnaire in `details`; older rows only have the
+  // flat columns.
+  if (infoForm.details) {
+    return (
+      <div className="bg-card p-6 rounded-2xl ring-1 ring-border">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Information form</h2>
+          {infoForm.submitted_at && (
+            <span className="text-xs text-muted-foreground">
+              Submitted {new Date(infoForm.submitted_at).toLocaleDateString()}
+            </span>
+          )}
+        </div>
+        <FullInformationForm d={infoForm.details} />
       </div>
     );
   }

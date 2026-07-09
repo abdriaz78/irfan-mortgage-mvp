@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { FileText, CheckCircle2, AlertCircle, Clock, Lock } from "lucide-react";
+import { FileText, CheckCircle2, AlertCircle, Clock, Lock, UploadCloud } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { useMyCase } from "@/hooks/use-my-case";
@@ -21,7 +21,6 @@ function DocumentsPage() {
   const [requests, setRequests] = useState<CaseRequestRow[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(true);
   const [uploadingType, setUploadingType] = useState<string | null>(null);
-  const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
 
   async function loadDocuments() {
     if (!myCase) {
@@ -124,6 +123,13 @@ function DocumentsPage() {
   }
 
   const verifiedCount = documents.filter((d) => d.status === "verified").length;
+  const pendingRequired = REQUIRED_DOCUMENT_TYPES.filter(
+    (type) => !documents.some((d) => d.document_type === type),
+  ).length;
+  const pendingRequests = requests.filter(
+    (r) => !documents.some((d) => d.request_id === r.id),
+  ).length;
+  const outstanding = pendingRequired + pendingRequests;
 
   return (
     <section className="py-16">
@@ -138,6 +144,20 @@ function DocumentsPage() {
               </p>
             </div>
 
+            {outstanding > 0 && (
+              <div className="flex items-center gap-3 rounded-2xl bg-brand-soft/70 ring-1 ring-brand/20 p-4 text-sm">
+                <span className="grid size-9 place-items-center rounded-full bg-brand/10 text-brand shrink-0">
+                  <UploadCloud className="size-4 motion-safe:animate-bounce" />
+                </span>
+                <p className="text-foreground">
+                  You have <span className="font-semibold">{outstanding}</span>{" "}
+                  {outstanding === 1 ? "document" : "documents"} still to upload. Look for the{" "}
+                  <span className="font-semibold text-brand">highlighted rows</span> below — drag a
+                  file straight onto a row, or use the Upload button.
+                </p>
+              </div>
+            )}
+
             {/* Ad-hoc requests from advisor/lender */}
             {requests.length > 0 && (
               <div className="bg-card rounded-2xl ring-1 ring-border overflow-hidden">
@@ -146,47 +166,15 @@ function DocumentsPage() {
                 </div>
                 <ul className="divide-y divide-border">
                   {requests.map((r) => {
-                    const uploadedForRequest = documents.filter((d) => d.request_id === r.id);
-                    const latest = uploadedForRequest[0];
+                    const latest = documents.filter((d) => d.request_id === r.id)[0];
                     return (
-                      <li key={r.id} className="p-5 flex items-center gap-4 flex-wrap">
-                        <div className="size-10 bg-secondary rounded-lg grid place-items-center text-brand shrink-0">
-                          <FileText className="size-4" />
-                        </div>
-                        <div className="flex-1 min-w-[200px]">
-                          <div className="text-sm font-medium">{r.description}</div>
-                          {latest ? (
-                            <div className="text-xs text-muted-foreground">
-                              Uploaded {new Date(latest.created_at).toLocaleDateString()}
-                              {latest.reviewer_note ? ` — ${latest.reviewer_note}` : ""}
-                            </div>
-                          ) : (
-                            <div className="text-xs text-muted-foreground">Not yet uploaded</div>
-                          )}
-                        </div>
-                        {latest && <StatusPill status={latest.status} />}
-                        <input
-                          ref={(el) => {
-                            fileInputs.current[r.id] = el;
-                          }}
-                          type="file"
-                          className="hidden"
-                          accept="application/pdf,image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleUploadForRequest(r.id, file);
-                            e.target.value = "";
-                          }}
-                        />
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={uploadingType === r.id}
-                          onClick={() => fileInputs.current[r.id]?.click()}
-                        >
-                          {uploadingType === r.id ? "Uploading…" : latest ? "Re-upload" : "Upload"}
-                        </Button>
-                      </li>
+                      <UploadRow
+                        key={r.id}
+                        title={r.description}
+                        latest={latest}
+                        uploading={uploadingType === r.id}
+                        onFile={(file) => handleUploadForRequest(r.id, file)}
+                      />
                     );
                   })}
                 </ul>
@@ -200,47 +188,15 @@ function DocumentsPage() {
               </div>
               <ul className="divide-y divide-border">
                 {REQUIRED_DOCUMENT_TYPES.map((type) => {
-                  const uploaded = documents.filter((d) => d.document_type === type);
-                  const latest = uploaded[0];
+                  const latest = documents.filter((d) => d.document_type === type)[0];
                   return (
-                    <li key={type} className="p-5 flex items-center gap-4 flex-wrap">
-                      <div className="size-10 bg-secondary rounded-lg grid place-items-center text-brand shrink-0">
-                        <FileText className="size-4" />
-                      </div>
-                      <div className="flex-1 min-w-[200px]">
-                        <div className="text-sm font-medium">{DOCUMENT_TYPE_LABELS[type]}</div>
-                        {latest ? (
-                          <div className="text-xs text-muted-foreground">
-                            Uploaded {new Date(latest.created_at).toLocaleDateString()}
-                            {latest.reviewer_note ? ` — ${latest.reviewer_note}` : ""}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-muted-foreground">Not yet uploaded</div>
-                        )}
-                      </div>
-                      {latest && <StatusPill status={latest.status} />}
-                      <input
-                        ref={(el) => {
-                          fileInputs.current[type] = el;
-                        }}
-                        type="file"
-                        className="hidden"
-                        accept="application/pdf,image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleUpload(type, file);
-                          e.target.value = "";
-                        }}
-                      />
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={uploadingType === type}
-                        onClick={() => fileInputs.current[type]?.click()}
-                      >
-                        {uploadingType === type ? "Uploading…" : latest ? "Re-upload" : "Upload"}
-                      </Button>
-                    </li>
+                    <UploadRow
+                      key={type}
+                      title={DOCUMENT_TYPE_LABELS[type]}
+                      latest={latest}
+                      uploading={uploadingType === type}
+                      onFile={(file) => handleUpload(type, file)}
+                    />
                   );
                 })}
               </ul>
@@ -312,6 +268,104 @@ function DocumentsPage() {
         </div>
       </div>
     </section>
+  );
+}
+
+function UploadRow({
+  title,
+  latest,
+  uploading,
+  onFile,
+}: {
+  title: string;
+  latest?: DocumentRow;
+  uploading: boolean;
+  onFile: (file: File) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const notUploaded = !latest;
+
+  function pickFile(files: FileList | null | undefined) {
+    const file = files?.[0];
+    if (file) onFile(file);
+  }
+
+  return (
+    <li
+      onDragOver={(e) => {
+        e.preventDefault();
+        if (!uploading && !dragging) setDragging(true);
+      }}
+      onDragLeave={(e) => {
+        // Only clear when the pointer actually leaves the row, not its children.
+        if (e.currentTarget === e.target) setDragging(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+        if (!uploading) pickFile(e.dataTransfer.files);
+      }}
+      className={`flex items-center gap-4 flex-wrap p-5 transition-colors ${
+        dragging
+          ? "bg-brand-soft ring-2 ring-inset ring-brand"
+          : notUploaded
+            ? "bg-brand-soft/25"
+            : ""
+      }`}
+    >
+      <div
+        className={`size-10 rounded-lg grid place-items-center shrink-0 transition-colors ${
+          notUploaded ? "bg-brand/10 text-brand ring-1 ring-brand/30" : "bg-secondary text-brand"
+        }`}
+      >
+        {notUploaded ? (
+          <UploadCloud className={`size-4 ${dragging ? "" : "motion-safe:animate-bounce"}`} />
+        ) : (
+          <FileText className="size-4" />
+        )}
+      </div>
+      <div className="flex-1 min-w-[200px]">
+        <div className="text-sm font-medium">{title}</div>
+        {latest ? (
+          <div className="text-xs text-muted-foreground">
+            Uploaded {new Date(latest.created_at).toLocaleDateString()}
+            {latest.reviewer_note ? ` — ${latest.reviewer_note}` : ""}
+          </div>
+        ) : (
+          <div className="text-xs font-medium text-brand">
+            {dragging ? "Drop your file to upload" : "Drag a file here, or click Upload →"}
+          </div>
+        )}
+      </div>
+      {latest && <StatusPill status={latest.status} />}
+      <input
+        ref={inputRef}
+        type="file"
+        className="hidden"
+        accept="application/pdf,image/*"
+        onChange={(e) => {
+          pickFile(e.target.files);
+          e.target.value = "";
+        }}
+      />
+      <Button
+        size="sm"
+        variant={notUploaded ? "default" : "outline"}
+        disabled={uploading}
+        onClick={() => inputRef.current?.click()}
+      >
+        {uploading ? (
+          "Uploading…"
+        ) : latest ? (
+          "Re-upload"
+        ) : (
+          <>
+            <UploadCloud className="size-4" /> Upload
+          </>
+        )}
+      </Button>
+    </li>
   );
 }
 

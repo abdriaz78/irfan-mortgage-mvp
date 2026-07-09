@@ -42,14 +42,15 @@ function SignupPage() {
       return;
     }
 
-    if (!data.session) {
-      toast.success("Check your inbox to confirm your email, then log in.");
-      navigate({ to: "/login" });
-      return;
+    // Email confirmation is disabled in Supabase for local dev, so signUp may
+    // return a session and auto-log the user in. We want signup to always end
+    // on the sign-in screen, so clear that session before redirecting.
+    if (data.session) {
+      await supabase.auth.signOut();
     }
 
-    toast.success("Account created — welcome!");
-    navigate({ to: "/portal" });
+    toast.success("Account created successfully");
+    navigate({ to: "/login" });
   }
 
   return (
