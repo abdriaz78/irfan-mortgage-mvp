@@ -10,6 +10,8 @@ import {
   UploadCloud,
   AlertCircle,
   PartyPopper,
+  Star,
+  Gift,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { supabase } from "@/lib/supabase";
@@ -19,6 +21,7 @@ import { CASE_STAGES, TOTAL_STAGES, getStage, REQUIRED_DOCUMENT_TYPES } from "@/
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { NotificationRow, CaseRequestRow, DocumentRow } from "@/lib/database.types";
+import { REVIEW_MESSAGE_KEY, DEFAULT_REVIEW_MESSAGE, GOOGLE_REVIEW_URL } from "@/lib/settings";
 
 // Stages the client is responsible for; when they submit their part these
 // enter a "pending advisor approval" state until the admin advances the case.
@@ -28,7 +31,7 @@ const DOCUMENT_UPLOAD_STAGE = 3;
 type DocSummary = Pick<DocumentRow, "document_type" | "status">;
 
 export const Route = createFileRoute("/portal/")({
-  head: () => ({ meta: [{ title: "Your Case · Fast Track Mortgages" }] }),
+  head: () => ({ meta: [{ title: "Your Case · Fasttrack Mortgages" }] }),
   component: PortalPage,
 });
 
@@ -39,6 +42,7 @@ function PortalPage() {
   const [openRequests, setOpenRequests] = useState<CaseRequestRow[]>([]);
   const [infoSubmittedAt, setInfoSubmittedAt] = useState<string | null>(null);
   const [documents, setDocuments] = useState<DocSummary[]>([]);
+  const [reviewMessage, setReviewMessage] = useState(DEFAULT_REVIEW_MESSAGE);
   const [loadingExtras, setLoadingExtras] = useState(true);
 
   useEffect(() => {
@@ -48,31 +52,38 @@ function PortalPage() {
       return;
     }
     (async () => {
-      const [{ data: notifs }, { data: requests }, { data: form }, { data: docs }] =
-        await Promise.all([
-          supabase
-            .from("notifications")
-            .select("*")
-            .eq("case_id", myCase.id)
-            .order("created_at", { ascending: false })
-            .limit(20),
-          supabase
-            .from("case_requests")
-            .select("*")
-            .eq("case_id", myCase.id)
-            .eq("status", "open")
-            .order("created_at", { ascending: false }),
-          supabase
-            .from("information_form_responses")
-            .select("submitted_at")
-            .eq("case_id", myCase.id)
-            .maybeSingle(),
-          supabase.from("documents").select("document_type, status").eq("case_id", myCase.id),
-        ]);
+      const [
+        { data: notifs },
+        { data: requests },
+        { data: form },
+        { data: docs },
+        { data: reviewSetting },
+      ] = await Promise.all([
+        supabase
+          .from("notifications")
+          .select("*")
+          .eq("case_id", myCase.id)
+          .order("created_at", { ascending: false })
+          .limit(20),
+        supabase
+          .from("case_requests")
+          .select("*")
+          .eq("case_id", myCase.id)
+          .eq("status", "open")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("information_form_responses")
+          .select("submitted_at")
+          .eq("case_id", myCase.id)
+          .maybeSingle(),
+        supabase.from("documents").select("document_type, status").eq("case_id", myCase.id),
+        supabase.from("app_settings").select("value").eq("key", REVIEW_MESSAGE_KEY).maybeSingle(),
+      ]);
       setNotifications(notifs ?? []);
       setOpenRequests(requests ?? []);
       setInfoSubmittedAt(form?.submitted_at ?? null);
       setDocuments(docs ?? []);
+      setReviewMessage(reviewSetting?.value ?? DEFAULT_REVIEW_MESSAGE);
       setLoadingExtras(false);
     })();
   }, [caseLoading, myCase?.id]);
@@ -161,6 +172,7 @@ function PortalPage() {
         </div>
 
         {isComplete && <CelebrationBanner caseNumber={myCase.case_number} />}
+        {isComplete && <ReviewRequestCard message={reviewMessage} />}
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Case progress */}
@@ -400,6 +412,51 @@ function PortalPage() {
         </div>
       </div>
     </section>
+  );
+}
+
+function ReviewRequestCard({ message }: { message: string }) {
+  return (
+    <div className="mb-8 p-8 rounded-2xl bg-card ring-1 ring-border">
+      <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full bg-brand-soft text-brand px-3 py-1 text-[11px] font-semibold uppercase tracking-widest mb-4">
+            <Gift className="size-3.5" /> Thank-you offer
+          </div>
+          <h2 className="text-2xl font-semibold mb-3">Enjoyed working with us? Spread the word.</h2>
+          <div className="flex gap-0.5 text-brand-accent mb-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className="size-5 fill-current" />
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-6 max-w-[54ch] whitespace-pre-line">
+            {message}
+          </p>
+          <a
+            href={GOOGLE_REVIEW_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+          >
+            <Star className="size-4" /> Leave a Google review
+          </a>
+        </div>
+        <div className="flex flex-col items-center gap-2 shrink-0">
+          <div className="rounded-xl bg-white p-3 ring-1 ring-border">
+            <img
+              src="/images/review-qr.png"
+              alt="Scan to review Fasttrack Mortgages on Google"
+              width={160}
+              height={160}
+              className="size-40"
+            />
+          </div>
+          <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Scan to review us
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -4,8 +4,8 @@ import { ShieldCheck, Lock, FileCheck2, Scale } from "lucide-react";
 export const Route = createFileRoute("/compliance")({
   head: () => ({
     meta: [
-      { title: "Compliance, Privacy & Legal · Fast Track Mortgages" },
-      { name: "description", content: "FCA disclosure, privacy policy, cookie policy, GDPR compliance, and secure document handling for Fast Track Mortgages." },
+      { title: "Compliance, Privacy & Legal · Fasttrack Mortgages" },
+      { name: "description", content: "FCA disclosure, privacy policy, cookie policy, GDPR compliance, and secure document handling for Fasttrack Mortgages Ltd." },
     ],
   }),
   component: CompliancePage,
@@ -29,7 +29,7 @@ function CompliancePage() {
       <section className="py-16">
         <div className="container-page grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
           {[
-            { icon: <ShieldCheck className="size-5" />, title: "FCA Authorised", meta: "Reference No. 000000" },
+            { icon: <ShieldCheck className="size-5" />, title: "FCA Authorised", meta: "AR of Connect IFA · Ref 613394" },
             { icon: <Lock className="size-5" />, title: "ISO 27001", meta: "Data security certified" },
             { icon: <FileCheck2 className="size-5" />, title: "GDPR Compliant", meta: "Full data rights" },
             { icon: <Scale className="size-5" />, title: "FOS Registered", meta: "Independent redress" },
@@ -73,15 +73,16 @@ const SECTIONS = [
   {
     id: "fca", eyebrow: "Regulation", title: "FCA Disclosure",
     body: [
-      "Fast Track Mortgages Financial Services Ltd is authorised and regulated by the Financial Conduct Authority (FCA) under reference number 000000. You can verify our status on the FCA register at register.fca.org.uk.",
-      "We are a whole-of-market mortgage and protection broker. We do not charge you a broker fee for standard residential mortgages or protection products; we are remunerated by commission from lenders and insurers, which we disclose in full before you commit.",
+      "Fasttrack Mortgages Ltd (Registered in England & Wales No. 08525768) is an Appointed Representative of Connect IFA Ltd, which is authorised and regulated by the Financial Conduct Authority (FCA) under reference number 613394. You can verify our status on the FCA register at register.fca.org.uk.",
+      "We are a whole-of-market mortgage and protection broker (with the exception of bridging finance). For mortgage advice we may charge a fee, typically £750 or 1% of the loan amount depending on your circumstances, which we confirm in writing before you commit. We are also a credit broker and receive commission from lenders on completion; this does not affect the amount you borrow. For non-investment insurance we are usually remunerated by a percentage-based commission on the premium.",
+      "The Financial Conduct Authority does not regulate some forms of buy-to-let and commercial mortgages to limited companies, bridging loans, wills, or conveyancing. If you have a complaint we cannot resolve, you may refer it to the Financial Ombudsman Service.",
     ],
   },
   {
     id: "privacy", eyebrow: "Data", title: "Privacy Policy",
     body: [
       "We collect only the personal data required to provide regulated advice and administer your application. This includes identity, financial, employment, and property information. We share data only with providers you have consented to be introduced to, credit reference agencies where required, and regulators upon lawful request.",
-      "You have the right to access, rectify, or erase your personal data at any time. Contact our Data Protection Officer at dpo@vantageandco.example.",
+      "You have the right to access, rectify, or erase your personal data at any time. Contact us at info@fasttrackmortgages.co.uk or 01274 962606.",
     ],
   },
   {

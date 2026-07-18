@@ -44,7 +44,7 @@ import {
 } from "@/lib/information-form";
 
 export const Route = createFileRoute("/portal/information-form")({
-  head: () => ({ meta: [{ title: "Information Form · Fast Track Mortgages" }] }),
+  head: () => ({ meta: [{ title: "Information Form · Fasttrack Mortgages" }] }),
   component: InformationFormPage,
 });
 
@@ -1756,7 +1756,7 @@ function StepReview({
         <h3 className="text-sm font-semibold">Declarations</h3>
         <ConsentCheckbox name="consent_data_processing" register={register} errors={errors}>
           I confirm the information provided is accurate to the best of my knowledge, and I consent
-          to Fast Track Mortgages processing my personal data to assess my mortgage application.
+          to Fasttrack Mortgages processing my personal data to assess my mortgage application.
         </ConsentCheckbox>
         <ConsentCheckbox name="consent_credit_search" register={register} errors={errors}>
           I understand that a credit search may be carried out as part of assessing my application.

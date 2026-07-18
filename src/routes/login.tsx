@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
-    meta: [{ title: "Log in · Fast Track Mortgages" }],
+    meta: [{ title: "Log in · Fasttrack Mortgages" }],
   }),
   component: LoginPage,
 });

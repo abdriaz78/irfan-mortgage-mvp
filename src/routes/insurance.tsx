@@ -6,7 +6,7 @@ import { calculateLeadScore, formatLeadScore, saveLead, type LeadData } from "@/
 export const Route = createFileRoute("/insurance")({
   head: () => ({
     meta: [
-      { title: "Insurance — Life, Income & Home Protection · Fast Track Mortgages" },
+      { title: "Insurance — Life, Income & Home Protection · Fasttrack Mortgages" },
       { name: "description", content: "Life insurance, income protection, critical illness, home, landlord, and business insurance. Independent quotes across 40+ insurers." },
     ],
   }),

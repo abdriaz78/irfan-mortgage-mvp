@@ -14,6 +14,7 @@ import {
 const links = [
   { to: "/mortgages", label: "Mortgages" },
   { to: "/insurance", label: "Insurance" },
+  { to: "/", hash: "services", label: "Services" },
   { to: "/compare", label: "Compare" },
   { to: "/portal", label: "Portal" },
   { to: "/resources", label: "Resources" },
@@ -32,13 +33,14 @@ export function SiteNav() {
             className="flex items-center gap-2 text-lg font-semibold tracking-tight text-brand font-display"
           >
             <span className="inline-block size-2.5 rounded-full bg-brand" />
-            Fast Track Mortgages
+            Fasttrack Mortgages
           </Link>
           <div className="hidden md:flex gap-6">
             {links.map((l) => (
               <Link
-                key={l.to}
+                key={l.label}
                 to={l.to}
+                hash={"hash" in l ? l.hash : undefined}
                 className={`text-sm font-medium transition-colors ${
                   pathname === l.to
                     ? "text-foreground"
@@ -70,8 +72,9 @@ export function SiteNav() {
           <div className="container-page py-4 flex flex-col gap-3">
             {links.map((l) => (
               <Link
-                key={l.to}
+                key={l.label}
                 to={l.to}
+                hash={"hash" in l ? l.hash : undefined}
                 onClick={() => setOpen(false)}
                 className="text-sm font-medium py-2"
               >

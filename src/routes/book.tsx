@@ -5,7 +5,7 @@ import advisorPortrait from "@/assets/advisor-portrait.jpg";
 export const Route = createFileRoute("/book")({
   head: () => ({
     meta: [
-      { title: "Book a Consultation · Fast Track Mortgages" },
+      { title: "Book a Consultation · Fasttrack Mortgages" },
       { name: "description", content: "Book a 45-minute consultation with a regulated mortgage or protection advisor — video, phone, or in person." },
     ],
   }),
@@ -23,12 +23,12 @@ function BookPage() {
             <p className="text-muted-foreground">Free, no obligation, and fully confidential. We'll follow up by email with a summary.</p>
           </div>
           <div className="p-6 bg-card ring-1 ring-border rounded-2xl">
-            <img src={advisorPortrait} alt="Marcus Kensington" className="size-16 rounded-full object-cover mb-4" width={800} height={1000} loading="lazy" />
-            <div className="text-sm font-semibold">Marcus Kensington</div>
-            <div className="text-xs text-muted-foreground mb-4">Senior Mortgage Adviser · CeMAP · 12 yrs</div>
+            <img src={advisorPortrait} alt="Your Fasttrack Mortgages adviser" className="size-16 rounded-full object-cover mb-4" width={800} height={1000} loading="lazy" />
+            <div className="text-sm font-semibold">Your dedicated adviser</div>
+            <div className="text-xs text-muted-foreground mb-4">Qualified Mortgage &amp; Protection Adviser · CeMAP</div>
             <div className="flex gap-0.5 text-brand-accent">
               {"★★★★★".split("").map((_, i) => <span key={i}>★</span>)}
-              <span className="text-xs text-muted-foreground ml-2">4.9 · 428 reviews</span>
+              <span className="text-xs text-muted-foreground ml-2">5.0 · 81 Google reviews</span>
             </div>
           </div>
           <div className="p-6 bg-secondary/60 rounded-2xl">

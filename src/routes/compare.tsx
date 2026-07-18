@@ -4,7 +4,7 @@ import { Filter, ArrowUpDown, Star } from "lucide-react";
 export const Route = createFileRoute("/compare")({
   head: () => ({
     meta: [
-      { title: "Compare Quotes — Mortgages & Insurance · Fast Track Mortgages" },
+      { title: "Compare Quotes — Mortgages & Insurance · Fasttrack Mortgages" },
       { name: "description", content: "Live comparison across 90+ mortgage lenders and 40+ insurers. Filter by cost, coverage, provider, and term." },
     ],
   }),

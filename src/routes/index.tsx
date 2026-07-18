@@ -23,7 +23,7 @@ import { SectionHeading } from "@/components/site/section-heading";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Fast Track Mortgages — Compare Mortgage & Insurance Solutions in Minutes" },
+      { title: "Fasttrack Mortgages — Compare Mortgage & Insurance Solutions in Minutes" },
       {
         name: "description",
         content:
@@ -60,10 +60,10 @@ function Home() {
               <Link to="/book" className="btn-secondary">Book a Consultation</Link>
             </div>
             <div className="mt-16 pt-8 border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-6">
-              <Stat value="£2.4B" label="Lending facilitated" />
-              <Stat value="15,000+" label="Clients advised" />
-              <Stat value="4.9★" label="Google rating" />
-              <Stat value="14 yrs" label="Regulated experience" />
+              <Stat value="5.0★" label="Google rating" />
+              <Stat value="81" label="Client reviews" />
+              <Stat value="Est. 2013" label="Bradford-based" />
+              <Stat value="Whole" label="Of-market panel" />
             </div>
           </div>
 
@@ -146,8 +146,83 @@ function Home() {
         </div>
       </section>
 
+      {/* Products & services */}
+      <section id="services" className="py-24 bg-secondary/40 border-y border-border scroll-mt-24">
+        <div className="container-page">
+          <div className="mb-14 max-w-3xl">
+            <div className="eyebrow mb-4 text-brand">What we offer</div>
+            <h2 className="text-5xl md:text-7xl font-semibold text-foreground text-balance mb-6 leading-[0.98]">
+              Our Services
+            </h2>
+            <p className="text-lg text-muted-foreground text-pretty leading-relaxed max-w-[60ch]">
+              Six mortgage products, whole-of-market — plus protection, loans, and the legal side of moving. Whatever
+              your circumstances, there's a product for it. We search the market, handle the paperwork, and place
+              cases the high street turns away.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {HOME_PRODUCTS.map((p) => (
+              <Link
+                key={p.title}
+                to="/mortgages"
+                className="group bg-card rounded-2xl ring-1 ring-border hover:ring-brand/30 transition-all hover:shadow-md overflow-hidden"
+              >
+                <div className="aspect-[16/10] overflow-hidden bg-secondary">
+                  <img
+                    src={p.img}
+                    alt={p.title}
+                    loading="lazy"
+                    width={800}
+                    height={500}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold mb-2">{p.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{p.copy}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-14">
+            <div className="eyebrow mb-6 text-brand">More than mortgages</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {HOME_SERVICES.map((s) => (
+                <Link
+                  key={s.title}
+                  to={s.href}
+                  className="group bg-card rounded-2xl ring-1 ring-border hover:ring-brand/30 transition-all overflow-hidden"
+                >
+                  <div className="aspect-[16/10] overflow-hidden bg-secondary">
+                    <img
+                      src={s.img}
+                      alt={s.title}
+                      loading="lazy"
+                      width={800}
+                      height={500}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <div className="text-sm font-semibold mb-1">{s.title}</div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{s.copy}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-10">
+            <Link to="/mortgages" className="btn-primary">
+              Explore all products <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Calculators grid */}
-      <section className="py-24 bg-secondary/40 border-y border-border">
+      <section className="py-24">
         <div className="container-page">
           <SectionHeading
             eyebrow="Tools"
@@ -270,7 +345,7 @@ function Home() {
           <SectionHeading
             eyebrow="Word of mouth"
             title="What our clients say."
-            description="Across 2,400+ reviews, families and professionals trust Vantage to move fast without cutting corners."
+            description="Across 80+ five-star reviews, families and professionals trust Fasttrack to move fast without cutting corners."
           />
           <div className="grid md:grid-cols-3 gap-6">
             {TESTIMONIALS.map((t) => (
@@ -464,6 +539,25 @@ function ServiceCard({
   );
 }
 
+const HOME_PRODUCTS = [
+  { img: "/images/services/first-time-buyer.jpg", title: "First Time Buyer", copy: "Work out what you can borrow and get the best first-time buyer deals and incentives." },
+  { img: "/images/services/remortgage.jpg", title: "Remortgage", copy: "Beat your reverting rate, lower your payments, or release equity for home improvements." },
+  { img: "/images/services/buy-to-let.jpg", title: "Buy to Let", copy: "Investment mortgages sourced across specialist lenders, with a dedicated adviser for landlords." },
+  { img: "/images/services/home-mover.jpg", title: "Home Mover", copy: "Porting or replacing your mortgage and managing the chain when you move home." },
+  { img: "/images/services/right-to-buy.jpg", title: "Right to Buy", copy: "Council tenants can buy at a discount — often with no deposit needed." },
+  { img: "/images/services/help-to-buy.jpg", title: "Help to Buy", copy: "Government-backed schemes that let you buy with a smaller deposit." },
+];
+
+const HOME_SERVICES = [
+  { img: "/images/services/protection.jpg", title: "Protection & Insurance", copy: "Life, critical illness, income protection, and home cover.", href: "/insurance" as const },
+  { img: "/images/services/loans.jpg", title: "Personal Loans", copy: "Secured and unsecured loans compared across lenders.", href: "/mortgages" as const },
+  { img: "/images/services/commercial.jpg", title: "Commercial Mortgages", copy: "Finance for commercial premises and limited companies.", href: "/mortgages" as const },
+  { img: "/images/services/bridging.jpg", title: "Bridging Loans", copy: "Short-term finance to move quickly or bridge a sale.", href: "/mortgages" as const },
+  { img: "/images/services/wills.jpg", title: "Wills", copy: "Professionally drafted wills through trusted partners.", href: "/mortgages" as const },
+  { img: "/images/services/conveyancing.jpg", title: "Conveyancing", copy: "Reliable partners for the legal side of your move.", href: "/mortgages" as const },
+  { img: "/images/services/energy.jpg", title: "Heating & Saving Energy", copy: "Cut bills with insulation, heat pumps and solar — plus green finance and grants.", href: "/mortgages" as const },
+];
+
 const PARTNERS = [
   "HALIFAX", "NATIONWIDE", "SANTANDER", "BARCLAYS", "HSBC", "LLOYDS", "NATWEST",
   "AVIVA", "LEGAL & GENERAL", "VITALITY", "ROYAL LONDON", "LLOYDS OF LONDON",
@@ -493,7 +587,7 @@ const TESTIMONIALS = [
     meta: "First-time buyer, London",
   },
   {
-    quote: "Two high-street lenders declined our BTL. Vantage placed it in nine days at a better rate.",
+    quote: "Two high-street lenders declined our BTL. Fasttrack placed it in nine days at a better rate.",
     author: "Marcus & Nadia Okafor",
     meta: "Portfolio landlords, Manchester",
   },

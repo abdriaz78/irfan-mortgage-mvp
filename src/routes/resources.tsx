@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 export const Route = createFileRoute("/resources")({
   head: () => ({
     meta: [
-      { title: "Resources — Mortgage & Insurance Guides · Fast Track Mortgages" },
+      { title: "Resources — Mortgage & Insurance Guides · Fasttrack Mortgages" },
       { name: "description", content: "In-depth guides on first-time buying, buy-to-let, remortgaging, self-employed mortgages, life insurance, and income protection." },
     ],
   }),

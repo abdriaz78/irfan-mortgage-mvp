@@ -75,7 +75,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "FCA-regulated mortgage brokerage and protection specialist. Compare exclusive rates, check eligibility instantly, and manage your application in one secure portal.",
       },
-      { name: "author", content: "Fast Track Mortgages" },
+      { name: "author", content: "Fasttrack Mortgages" },
       { property: "og:title", content: "Irfan — Mortgage & Insurance Advisory" },
       {
         property: "og:description",

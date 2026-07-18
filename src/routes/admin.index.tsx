@@ -1,10 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Inbox, TrendingUp, Loader, CheckCircle2, FileClock, UserPlus } from "lucide-react";
+import {
+  Inbox,
+  TrendingUp,
+  Loader,
+  CheckCircle2,
+  FileClock,
+  UserPlus,
+  MessageSquare,
+  Save,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { CASE_STAGES, TOTAL_STAGES, getStage } from "@/lib/case-stages";
+import { REVIEW_MESSAGE_KEY, DEFAULT_REVIEW_MESSAGE } from "@/lib/settings";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -255,8 +267,107 @@ function AdminCasesPage() {
             </TableBody>
           </Table>
         </div>
+
+        <ReviewMessageSettings />
       </div>
     </section>
+  );
+}
+
+function ReviewMessageSettings() {
+  const [value, setValue] = useState("");
+  const [saved, setSaved] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", REVIEW_MESSAGE_KEY)
+        .maybeSingle();
+      const v = data?.value ?? DEFAULT_REVIEW_MESSAGE;
+      setValue(v);
+      setSaved(v);
+      setLoading(false);
+    })();
+  }, []);
+
+  async function handleSave() {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    setSaving(true);
+    setError(null);
+    const { data: userData } = await supabase.auth.getUser();
+    const { error: saveError } = await supabase
+      .from("app_settings")
+      .upsert(
+        { key: REVIEW_MESSAGE_KEY, value: trimmed, updated_by: userData.user?.id ?? null },
+        { onConflict: "key" },
+      );
+    setSaving(false);
+    if (saveError) {
+      setError(saveError.message);
+      return;
+    }
+    setValue(trimmed);
+    setSaved(trimmed);
+    setJustSaved(true);
+  }
+
+  const dirty = value.trim() !== saved;
+
+  return (
+    <div className="bg-card rounded-2xl ring-1 ring-border p-6 mt-8">
+      <div className="flex items-center gap-2 mb-1">
+        <MessageSquare className="size-4 text-brand" />
+        <h2 className="text-sm font-semibold">Review request message</h2>
+      </div>
+      <p className="text-xs text-muted-foreground mb-4 max-w-[70ch]">
+        Shown to a client on their portal dashboard once their case reaches Completion, alongside the
+        Google review button and QR code. Edit the wording here — it updates for every client.
+      </p>
+      {loading ? (
+        <div className="text-sm text-muted-foreground">Loading…</div>
+      ) : (
+        <>
+          <Textarea
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              setJustSaved(false);
+            }}
+            rows={4}
+            className="mb-3"
+            placeholder="Enter the review request message clients will see…"
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <Button onClick={handleSave} disabled={!dirty || saving || value.trim() === ""}>
+              <Save className="size-4" /> {saving ? "Saving…" : "Save message"}
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                setValue(DEFAULT_REVIEW_MESSAGE);
+                setJustSaved(false);
+              }}
+              className="text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              Reset to default
+            </button>
+            {justSaved && !dirty && (
+              <span className="inline-flex items-center gap-1 text-xs text-emerald-600">
+                <CheckCircle2 className="size-3.5" /> Saved
+              </span>
+            )}
+            {error && <span className="text-xs text-red-600">{error}</span>}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 

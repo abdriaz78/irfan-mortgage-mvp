@@ -2,6 +2,7 @@
 
 1. Open your Supabase project (`bjtiaotqcpotxyfgkzrc`) → **SQL Editor** → **New query**.
 2. Paste the full contents of `migrations/0001_init.sql` and run it. This creates all tables, RLS policies, the `case-documents` storage bucket, and the stage/notification functions.
+   Then run the later migrations in order — `0002_link_documents_to_requests.sql`, `0003_full_information_form.sql`, and `0004_app_settings.sql` (adds the admin-editable settings table, including the client review-request message). Each is a plain SQL script you paste and run once.
 3. Sign up one client account through the app (`/signup`) so a `profiles` row exists.
 4. Promote that account to admin by running in the SQL Editor:
    ```sql

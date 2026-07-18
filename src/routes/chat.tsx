@@ -4,7 +4,7 @@ import { Send, Sparkles, ThumbsUp, ThumbsDown, Copy } from "lucide-react";
 export const Route = createFileRoute("/chat")({
   head: () => ({
     meta: [
-      { title: "AI Advisor — Ask anything · Fast Track Mortgages" },
+      { title: "AI Advisor — Ask anything · Fasttrack Mortgages" },
       { name: "description", content: "24/7 AI advisor for mortgage and insurance FAQs, eligibility, document requirements, and process guidance." },
     ],
   }),
@@ -41,7 +41,7 @@ function ChatPage() {
               <Sparkles className="size-4" />
             </div>
             <div>
-              <div className="text-sm font-semibold">Vantage AI</div>
+              <div className="text-sm font-semibold">Fasttrack AI</div>
               <div className="text-[10px] text-brand uppercase tracking-widest font-semibold">● Online</div>
             </div>
           </div>
@@ -104,7 +104,7 @@ const SUGGESTIONS = [
 ];
 
 const MESSAGES = [
-  { role: "assistant" as const, text: "Hi Eleanor — I'm the Vantage AI advisor. Ask me anything about your mortgage, insurance, or application progress." },
+  { role: "assistant" as const, text: "Hi Eleanor — I'm the Fasttrack AI advisor. Ask me anything about your mortgage, insurance, or application progress." },
   { role: "user" as const, text: "How much deposit do I need for a £470,000 property?" },
   { role: "assistant" as const, text: "For a £470,000 property, most lenders require a minimum 5% deposit (£23,500), but you'll access materially better rates at 10% (£47,000) or 15% (£70,500). Based on your profile, I'd recommend targeting a 15% deposit to unlock our best fixed rates near 3.89%." },
   { role: "user" as const, text: "Do I need life insurance if my partner earns similarly?" },

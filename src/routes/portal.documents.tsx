@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import type { CaseRequestRow, DocumentRow, DocumentType } from "@/lib/database.types";
 
 export const Route = createFileRoute("/portal/documents")({
-  head: () => ({ meta: [{ title: "Documents · Fast Track Mortgages" }] }),
+  head: () => ({ meta: [{ title: "Documents · Fasttrack Mortgages" }] }),
   component: DocumentsPage,
 });
 

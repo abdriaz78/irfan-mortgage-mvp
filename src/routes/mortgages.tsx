@@ -1,12 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Calculator, TrendingUp, Home, Landmark, Percent, PiggyBank, X, Check } from "lucide-react";
+import {
+  ArrowRight,
+  Calculator,
+  TrendingUp,
+  Home,
+  Landmark,
+  Percent,
+  PiggyBank,
+  X,
+  Check,
+  AlertCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { calculateLeadScore, formatLeadScore, saveLead, type LeadData } from "@/lib/lead-scoring";
 
 export const Route = createFileRoute("/mortgages")({
   head: () => ({
     meta: [
-      { title: "Mortgages — Eligibility Checker & Calculators · Fast Track Mortgages" },
+      { title: "Mortgages — Eligibility Checker & Calculators · Fasttrack Mortgages" },
       { name: "description", content: "Instant mortgage eligibility, affordability, repayment, stamp duty, refinance and overpayment calculators. Whole-of-market advice from FCA-regulated brokers." },
     ],
   }),
@@ -80,21 +91,112 @@ function MortgagesPage() {
         />
       )}
 
-      {/* Mortgage types */}
+      {/* Mortgage products */}
       <section className="py-24">
         <div className="container-page">
-          <div className="grid lg:grid-cols-3 gap-8">
-            {TYPES.map((t) => (
-              <article key={t.title} className="border-t border-foreground pt-8">
-                <div className="text-[11px] font-mono text-muted-foreground mb-4">{t.tag}</div>
-                <h3 className="text-2xl font-semibold mb-3 font-display">{t.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">{t.copy}</p>
-                <Link to="/compare" className="text-sm font-semibold text-brand inline-flex items-center gap-1">
-                  Compare rates <ArrowRight className="size-3" />
-                </Link>
+          <div className="mb-12 max-w-2xl">
+            <div className="eyebrow mb-4 text-brand">Mortgage products</div>
+            <h2 className="text-4xl font-semibold text-balance mb-4">Whatever stage you're at, there's a mortgage for it.</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              We search the whole of market — bar bridging — to find the right product for your circumstances, then
+              handle the paperwork and coordinate with solicitors, accountants, and estate agents on your behalf.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {PRODUCTS.map((p) => (
+              <article
+                key={p.title}
+                className="group bg-card rounded-2xl ring-1 ring-border hover:ring-brand/30 transition-all hover:shadow-md overflow-hidden flex flex-col"
+              >
+                <div className="aspect-[16/10] overflow-hidden bg-secondary">
+                  <img
+                    src={p.img}
+                    alt={p.title}
+                    loading="lazy"
+                    width={800}
+                    height={500}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="p-7 flex flex-col flex-1">
+                  <h3 className="text-xl font-semibold mb-2">{p.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-5">{p.copy}</p>
+                  <Link to="/compare" className="mt-auto text-sm font-semibold text-brand inline-flex items-center gap-1 w-fit">
+                    Compare rates <ArrowRight className="size-3" />
+                  </Link>
+                </div>
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Credit problems callout */}
+      <section className="py-16 bg-secondary/40 border-y border-border">
+        <div className="container-page">
+          <div className="bg-card rounded-3xl ring-1 ring-border p-8 md:p-10 flex flex-col md:flex-row gap-8 items-start">
+            <div className="size-12 rounded-xl bg-brand-soft text-brand grid place-items-center shrink-0">
+              <AlertCircle className="size-6" />
+            </div>
+            <div className="max-w-[70ch]">
+              <h2 className="text-2xl font-semibold mb-3">Been turned away for credit problems?</h2>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Missed payments, defaults, CCJs, debt management plans, or a history of bankruptcy don't have to stop
+                you owning a home. We specialise in placing cases the high street declines — matching you with
+                specialist lenders who look at the full picture, not just a credit score.
+              </p>
+              <Link to="/book" className="text-sm font-semibold text-brand inline-flex items-center gap-1">
+                Talk to an adviser <ArrowRight className="size-3" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Additional services */}
+      <section className="py-24">
+        <div className="container-page">
+          <div className="mb-12 max-w-2xl">
+            <div className="eyebrow mb-4 text-brand">More than mortgages</div>
+            <h2 className="text-4xl font-semibold text-balance mb-4">Everything around the deal, in one place.</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              From protecting your family to the legal work of moving home, our advisers and trusted partners cover
+              the full journey.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {SERVICES.map((s) => (
+              <article
+                key={s.title}
+                className="group bg-card rounded-2xl ring-1 ring-border overflow-hidden flex flex-col hover:ring-brand/30 transition-all"
+              >
+                <div className="aspect-[16/10] overflow-hidden bg-secondary">
+                  <img
+                    src={s.img}
+                    alt={s.title}
+                    loading="lazy"
+                    width={800}
+                    height={500}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="p-7 flex flex-col flex-1">
+                  <h3 className="text-lg font-semibold mb-2">{s.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{s.copy}</p>
+                  {s.href && (
+                    <Link to={s.href} className="mt-auto text-sm font-semibold text-brand inline-flex items-center gap-1 w-fit">
+                      Learn more <ArrowRight className="size-3" />
+                    </Link>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mt-8 max-w-[70ch]">
+            The Financial Conduct Authority does not regulate some forms of buy-to-let and commercial mortgages,
+            bridging loans, wills, or conveyancing. Your home may be repossessed if you do not keep up repayments on
+            your mortgage.
+          </p>
         </div>
       </section>
     </>
@@ -387,10 +489,82 @@ const CALCS = [
   { id: "btl", icon: <Percent className="size-4" />, title: "Buy-to-Let Calculator", copy: "Rental yield, LTV, and lender stress-test coverage in one view.", tag: "INVESTOR" },
 ];
 
-const TYPES = [
-  { tag: "01 · RESIDENTIAL", title: "First-time buyer & mover", copy: "Standard and specialist residential mortgages, including 95% LTV and shared ownership pathways for first-time buyers." },
-  { tag: "02 · INVESTMENT", title: "Buy-to-let & portfolio", copy: "Single-property BTL through to portfolio landlords, with limited company structures and HMO specialists." },
-  { tag: "03 · SPECIALIST", title: "Complex income", copy: "Self-employed, contractor, retained profits, foreign income, high-net-worth — placements the high street can't reach." },
+const PRODUCTS = [
+  {
+    img: "/images/services/first-time-buyer.jpg",
+    title: "First Time Buyer",
+    copy: "Step onto the property ladder with confidence. We work out exactly how much you can borrow, source the best first-time buyer deals and incentives, and guide you through every stage.",
+  },
+  {
+    img: "/images/services/remortgage.jpg",
+    title: "Remortgage",
+    copy: "Coming to the end of your fixed rate? We search the market to secure a better rate, keep your monthly payments manageable, or release equity to fund home improvements.",
+  },
+  {
+    img: "/images/services/buy-to-let.jpg",
+    title: "Buy to Let",
+    copy: "Investment mortgages assessed on rental potential, sourced across a wide panel of specialist lenders. Typically needs a 20–25% deposit — with a dedicated adviser for landlords.",
+  },
+  {
+    img: "/images/services/home-mover.jpg",
+    title: "Home Mover",
+    copy: "Upgrading, downsizing, or simply relocating. We port or replace your existing mortgage and coordinate the chain, paperwork, and surveyors so your move stays stress-free.",
+  },
+  {
+    img: "/images/services/right-to-buy.jpg",
+    title: "Right to Buy",
+    copy: "Council tenants of two years or more in England and Wales can buy their home at a discount — often with no deposit required. We match you to lenders that support the RTB scheme.",
+  },
+  {
+    img: "/images/services/help-to-buy.jpg",
+    title: "Help to Buy",
+    copy: "Government-backed schemes that help you buy with a smaller deposit. We check your eligibility and combine scheme support with the most competitive mainstream products.",
+  },
+];
+
+const SERVICES = [
+  {
+    img: "/images/services/protection.jpg",
+    title: "Protection & Insurance",
+    copy: "Life cover, critical illness, income protection, and home insurance to keep your household resilient.",
+    href: "/insurance" as const,
+  },
+  {
+    img: "/images/services/loans.jpg",
+    title: "Personal Loans",
+    copy: "Secured and unsecured personal loans compared across lenders to fund your next plan.",
+    href: undefined,
+  },
+  {
+    img: "/images/services/commercial.jpg",
+    title: "Commercial Mortgages",
+    copy: "Finance for commercial premises and limited-company purchases, including complex cases.",
+    href: undefined,
+  },
+  {
+    img: "/images/services/bridging.jpg",
+    title: "Bridging Loans",
+    copy: "Short-term finance to bridge the gap between buying and selling, or to move quickly at auction.",
+    href: undefined,
+  },
+  {
+    img: "/images/services/wills.jpg",
+    title: "Wills",
+    copy: "Protect your family's future with professionally drafted wills through our trusted partners.",
+    href: undefined,
+  },
+  {
+    img: "/images/services/conveyancing.jpg",
+    title: "Conveyancing",
+    copy: "Reliable conveyancing partners to handle the legal side of your purchase or sale.",
+    href: undefined,
+  },
+  {
+    img: "/images/services/energy.jpg",
+    title: "Heating & Saving Energy",
+    copy: "Make your home warmer and cheaper to run — insulation, heat pumps, solar, and smart meters. We can help fund the work with additional borrowing, a green remortgage, or a home-improvement loan, and point you to government grants.",
+    href: undefined,
+  },
 ];
 
 // Calculator Modal Component
