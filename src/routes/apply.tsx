@@ -4,23 +4,36 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ShieldCheck, CheckCircle2, ArrowRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { emptyDetails, type InformationFormDetails } from "@/lib/information-form";
+import {
+  emptyDetails,
+  PURCHASE_STAGE_OPTIONS,
+  type InformationFormDetails,
+} from "@/lib/information-form";
 import { InformationFormShell } from "./portal.information-form";
 
 type ApplySearch = {
   purchaseOrRemortgage?: string;
   residentialOrBtl?: string;
   firstTimeBuyer?: string;
+  creditIssues?: string;
+  purchaseStage?: string;
+  currentLender?: string;
+  remortgagePurpose?: string;
+  enquiryNotes?: string;
 };
+
+const asString = (v: unknown): string | undefined => (typeof v === "string" ? v : undefined);
 
 export const Route = createFileRoute("/apply")({
   validateSearch: (search: Record<string, unknown>): ApplySearch => ({
-    purchaseOrRemortgage:
-      typeof search.purchaseOrRemortgage === "string" ? search.purchaseOrRemortgage : undefined,
-    residentialOrBtl:
-      typeof search.residentialOrBtl === "string" ? search.residentialOrBtl : undefined,
-    firstTimeBuyer:
-      typeof search.firstTimeBuyer === "string" ? search.firstTimeBuyer : undefined,
+    purchaseOrRemortgage: asString(search.purchaseOrRemortgage),
+    residentialOrBtl: asString(search.residentialOrBtl),
+    firstTimeBuyer: asString(search.firstTimeBuyer),
+    creditIssues: asString(search.creditIssues),
+    purchaseStage: asString(search.purchaseStage),
+    currentLender: asString(search.currentLender),
+    remortgagePurpose: asString(search.remortgagePurpose),
+    enquiryNotes: asString(search.enquiryNotes),
   }),
   head: () => ({
     meta: [
@@ -46,6 +59,27 @@ function prefill(search: ApplySearch): InformationFormDetails {
   if (search.firstTimeBuyer === "Yes" || search.firstTimeBuyer === "No") {
     base.first_time_buyer = search.firstTimeBuyer;
   }
+  if (search.creditIssues === "Yes") {
+    base.credit.notes =
+      "Flagged at enquiry: possible credit issues in the last 6 years and/or a payday loan in the last 2 years — please review.";
+  }
+  if (
+    search.purchaseStage &&
+    (PURCHASE_STAGE_OPTIONS as readonly string[]).includes(search.purchaseStage)
+  ) {
+    base.purchase_stage = search.purchaseStage;
+  }
+  if (search.currentLender) {
+    base.loan.current_lender = search.currentLender;
+  }
+  if (search.remortgagePurpose) {
+    base.loan.remortgage_purpose = search.remortgagePurpose;
+  }
+  if (search.enquiryNotes) {
+    base.loan.additional_info = [base.loan.additional_info, search.enquiryNotes]
+      .filter(Boolean)
+      .join("\n");
+  }
   return base;
 }
 
@@ -68,7 +102,8 @@ function ApplyPage() {
       email: a1.email || null,
       phone: a1.mobile || null,
       mortgage_type:
-        [values.residential_or_btl, values.purchase_or_remortgage].filter(Boolean).join(" ") || null,
+        [values.residential_or_btl, values.purchase_or_remortgage].filter(Boolean).join(" ") ||
+        null,
       details: values,
     });
     setSubmitting(false);
@@ -89,8 +124,8 @@ function ApplyPage() {
           </div>
           <h1 className="text-3xl font-semibold mb-3">Thank you — we've got your details</h1>
           <p className="text-muted-foreground mb-8">
-            One of our advisers will review your application and get in touch shortly. If it's urgent,
-            you can also book a consultation or message us on WhatsApp.
+            One of our advisers will review your application and get in touch shortly. If it's
+            urgent, you can also book a consultation or message us on WhatsApp.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link to="/book" className="btn-primary">
@@ -111,15 +146,15 @@ function ApplyPage() {
         <div className="eyebrow mb-3 text-brand">Mortgage application</div>
         <h1 className="text-3xl font-semibold mb-3">Start your mortgage application</h1>
         <p className="text-muted-foreground mb-8 text-sm">
-          No account needed — just tell us about you and your plans, and one of our advisers will pick
-          it up. The more you can share, the more accurate our advice will be.
+          No account needed — just tell us about you and your plans, and one of our advisers will
+          pick it up. The more you can share, the more accurate our advice will be.
         </p>
 
         <div className="mb-8 p-5 rounded-2xl bg-brand-soft/60 ring-1 ring-brand/20 flex gap-3">
           <ShieldCheck className="size-5 text-brand shrink-0 mt-0.5" />
           <div className="text-xs text-muted-foreground leading-relaxed">
-            <span className="font-semibold text-foreground">Your data:</span> everything here is used
-            only to assess your mortgage enquiry. We'll never share it without your permission.
+            <span className="font-semibold text-foreground">Your data:</span> everything here is
+            used only to assess your mortgage enquiry. We'll never share it without your permission.
           </div>
         </div>
 
