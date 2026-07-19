@@ -6,6 +6,7 @@ import {
   Controller,
   type Control,
   type UseFormRegister,
+  type UseFormReturn,
   type FieldPath,
   type FieldErrors,
 } from "react-hook-form";
@@ -160,27 +161,13 @@ function buildRow(caseId: string, values: FormValues, submitted: boolean) {
 function InformationFormPage() {
   const { session } = useAuth();
   const { case: myCase, loading: caseLoading } = useMyCase();
-  const [step, setStep] = useState(0);
   const [loadingForm, setLoadingForm] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState<string | null>(null);
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    trigger,
-    watch,
-    getValues,
-    reset,
-    formState: { errors },
-  } = useForm<FormValues>({ defaultValues: emptyDetails(), mode: "onBlur" });
-
-  const dependents = useFieldArray({ control, name: "dependents" });
-  const hasSecond = watch("has_second_applicant");
-  const purchaseOrRemortgage = watch("purchase_or_remortgage");
-  const isRemortgage = purchaseOrRemortgage === "Remortgage";
+  const methods = useForm<FormValues>({ defaultValues: emptyDetails(), mode: "onBlur" });
+  const { getValues, reset } = methods;
   const readOnly = useMemo(() => (myCase ? myCase.current_stage > 2 : false), [myCase]);
 
   useEffect(() => {
@@ -224,15 +211,6 @@ function InformationFormPage() {
       setLoadingForm(false);
     })();
   }, [caseLoading, myCase, reset]);
-
-  async function goNext() {
-    const valid = await trigger(STEP_REQUIRED[step]);
-    if (valid) setStep((s) => Math.min(s + 1, STEP_TITLES.length - 1));
-  }
-
-  function goBack() {
-    setStep((s) => Math.max(s - 1, 0));
-  }
 
   async function saveDraft() {
     if (!myCase || !session?.user || readOnly) return;
@@ -316,98 +294,15 @@ function InformationFormPage() {
           </div>
         )}
 
-        {/* Step indicator */}
-        <div className="flex items-center gap-2 mb-3">
-          {STEP_TITLES.map((title, i) => (
-            <div
-              key={title}
-              className={`flex-1 h-1.5 rounded-full ${i <= step ? "bg-brand" : "bg-secondary"}`}
-            />
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground mb-8">
-          Step {step + 1} of {STEP_TITLES.length}
-        </p>
-
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="bg-card p-6 sm:p-8 rounded-2xl ring-1 ring-border space-y-6"
-        >
-          <h2 className="text-lg font-semibold">{STEP_TITLES[step]}</h2>
-
-          <fieldset disabled={readOnly} className="space-y-6">
-            {step === 0 && (
-              <StepAboutMortgage
-                register={register}
-                control={control}
-                watch={watch}
-                errors={errors}
-              />
-            )}
-            {step === 1 && (
-              <StepApplicants
-                register={register}
-                control={control}
-                watch={watch}
-                errors={errors}
-                hasSecond={hasSecond}
-                dependents={dependents}
-                readOnly={readOnly}
-              />
-            )}
-            {step === 2 && (
-              <StepEmployment
-                register={register}
-                control={control}
-                watch={watch}
-                errors={errors}
-                hasSecond={hasSecond}
-              />
-            )}
-            {step === 3 && (
-              <StepCommitmentsCredit
-                register={register}
-                control={control}
-                watch={watch}
-                errors={errors}
-              />
-            )}
-            {step === 4 && (
-              <StepLoan
-                register={register}
-                control={control}
-                watch={watch}
-                errors={errors}
-                isRemortgage={isRemortgage}
-              />
-            )}
-            {step === 5 && (
-              <StepReview values={watch()} register={register} control={control} errors={errors} />
-            )}
-          </fieldset>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={goBack} disabled={step === 0}>
-              <ChevronLeft className="size-4" /> Back
-            </Button>
-            <div className="flex items-center gap-3">
-              {!readOnly && (
-                <Button type="button" variant="ghost" onClick={saveDraft} disabled={savingDraft}>
-                  <Save className="size-4" /> {savingDraft ? "Saving…" : "Save draft"}
-                </Button>
-              )}
-              {step < STEP_TITLES.length - 1 ? (
-                <Button type="button" onClick={goNext} disabled={readOnly}>
-                  Next <ChevronRight className="size-4" />
-                </Button>
-              ) : (
-                <Button type="submit" disabled={readOnly || submitting}>
-                  {submitting ? "Submitting…" : "Submit information form"}
-                </Button>
-              )}
-            </div>
-          </div>
-        </form>
+        <InformationFormShell
+          methods={methods}
+          readOnly={readOnly}
+          showSaveDraft={!readOnly}
+          savingDraft={savingDraft}
+          submitting={submitting}
+          onSaveDraft={saveDraft}
+          onSubmit={onSubmit}
+        />
 
         <p className="mt-6 text-sm text-center">
           <Link to="/portal" className="text-brand font-medium">
@@ -416,6 +311,143 @@ function InformationFormPage() {
         </p>
       </div>
     </section>
+  );
+}
+
+// Reusable multi-step form body — used by the logged-in portal page and the
+// public /apply page. The caller owns the react-hook-form instance (so it can
+// load/prefill data) and provides the submit/draft handlers.
+export function InformationFormShell({
+  methods,
+  readOnly = false,
+  showSaveDraft = false,
+  savingDraft = false,
+  submitting = false,
+  submitLabel = "Submit information form",
+  onSaveDraft,
+  onSubmit,
+}: {
+  methods: UseFormReturn<FormValues>;
+  readOnly?: boolean;
+  showSaveDraft?: boolean;
+  savingDraft?: boolean;
+  submitting?: boolean;
+  submitLabel?: string;
+  onSaveDraft?: () => void;
+  onSubmit: (values: FormValues) => void;
+}) {
+  const {
+    register,
+    control,
+    handleSubmit,
+    trigger,
+    watch,
+    formState: { errors },
+  } = methods;
+  const [step, setStep] = useState(0);
+  const dependents = useFieldArray({ control, name: "dependents" });
+  const hasSecond = watch("has_second_applicant");
+  const isRemortgage = watch("purchase_or_remortgage") === "Remortgage";
+
+  async function goNext() {
+    const valid = await trigger(STEP_REQUIRED[step]);
+    if (valid) setStep((s) => Math.min(s + 1, STEP_TITLES.length - 1));
+  }
+
+  function goBack() {
+    setStep((s) => Math.max(s - 1, 0));
+  }
+
+  return (
+    <>
+      {/* Step indicator */}
+      <div className="flex items-center gap-2 mb-3">
+        {STEP_TITLES.map((title, i) => (
+          <div
+            key={title}
+            className={`flex-1 h-1.5 rounded-full ${i <= step ? "bg-brand" : "bg-secondary"}`}
+          />
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground mb-8">
+        Step {step + 1} of {STEP_TITLES.length}
+      </p>
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="bg-card p-6 sm:p-8 rounded-2xl ring-1 ring-border space-y-6"
+      >
+        <h2 className="text-lg font-semibold">{STEP_TITLES[step]}</h2>
+
+        <fieldset disabled={readOnly} className="space-y-6">
+          {step === 0 && (
+            <StepAboutMortgage register={register} control={control} watch={watch} errors={errors} />
+          )}
+          {step === 1 && (
+            <StepApplicants
+              register={register}
+              control={control}
+              watch={watch}
+              errors={errors}
+              hasSecond={hasSecond}
+              dependents={dependents}
+              readOnly={readOnly}
+            />
+          )}
+          {step === 2 && (
+            <StepEmployment
+              register={register}
+              control={control}
+              watch={watch}
+              errors={errors}
+              hasSecond={hasSecond}
+            />
+          )}
+          {step === 3 && (
+            <StepCommitmentsCredit
+              register={register}
+              control={control}
+              watch={watch}
+              errors={errors}
+            />
+          )}
+          {step === 4 && (
+            <StepLoan
+              register={register}
+              control={control}
+              watch={watch}
+              errors={errors}
+              isRemortgage={isRemortgage}
+            />
+          )}
+          {step === 5 && (
+            <StepReview values={watch()} register={register} control={control} errors={errors} />
+          )}
+        </fieldset>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <Button type="button" variant="outline" onClick={goBack} disabled={step === 0}>
+            <ChevronLeft className="size-4" /> Back
+          </Button>
+          <div className="flex items-center gap-3">
+            {showSaveDraft && onSaveDraft && (
+              <Button type="button" variant="ghost" onClick={onSaveDraft} disabled={savingDraft}>
+                <Save className="size-4" /> {savingDraft ? "Saving…" : "Save draft"}
+              </Button>
+            )}
+            {step < STEP_TITLES.length - 1 ? (
+              <Button type="button" onClick={goNext} disabled={readOnly}>
+                Next <ChevronRight className="size-4" />
+              </Button>
+            ) : (
+              <Button type="submit" disabled={readOnly || submitting}>
+                {submitting ? "Submitting…" : submitLabel}
+              </Button>
+            )}
+          </div>
+        </div>
+      </form>
+    </>
   );
 }
 

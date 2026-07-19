@@ -304,7 +304,7 @@ function ApplicantDetailView({ a, label }: { a: ApplicantDetails; label: string 
   );
 }
 
-function FullInformationForm({ d }: { d: InformationFormDetails }) {
+export function FullInformationForm({ d }: { d: InformationFormDetails }) {
   const loan = d.loan;
   const isRemortgage = d.purchase_or_remortgage === "Remortgage";
   const c = d.commitments;

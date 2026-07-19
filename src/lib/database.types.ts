@@ -31,6 +31,26 @@ export interface AppSettingRow {
   updated_by: string | null;
 }
 
+export interface ReferralRow {
+  id: string;
+  client_name: string;
+  client_phone: string | null;
+  client_email: string | null;
+  referrer_name: string;
+  referrer_phone: string | null;
+  created_at: string;
+}
+
+export interface PublicApplicationRow {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  mortgage_type: string | null;
+  details: unknown;
+  created_at: string;
+}
+
 export interface CaseRow {
   id: string;
   case_number: string;

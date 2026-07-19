@@ -9,10 +9,14 @@ import {
   UserPlus,
   MessageSquare,
   Save,
+  Gift,
+  Send,
+  X,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { CASE_STAGES, TOTAL_STAGES, getStage } from "@/lib/case-stages";
 import { REVIEW_MESSAGE_KEY, DEFAULT_REVIEW_MESSAGE } from "@/lib/settings";
+import { mergeDetails } from "@/lib/information-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +29,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { CaseRow, Profile } from "@/lib/database.types";
+import type {
+  CaseRow,
+  Profile,
+  ReferralRow,
+  PublicApplicationRow,
+} from "@/lib/database.types";
+import { FullInformationForm } from "./admin.cases.$caseId";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({ meta: [{ title: "Admin · Case Pipeline" }] }),
@@ -36,23 +46,33 @@ function AdminCasesPage() {
   const [cases, setCases] = useState<CaseRow[]>([]);
   const [clients, setClients] = useState<Record<string, Profile>>({});
   const [docsPendingReview, setDocsPendingReview] = useState(0);
+  const [referrals, setReferrals] = useState<ReferralRow[]>([]);
+  const [applications, setApplications] = useState<PublicApplicationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [stageFilter, setStageFilter] = useState<number | "all">("all");
 
   useEffect(() => {
     (async () => {
-      const [{ data: caseRows }, { count: pendingDocs }] = await Promise.all([
-        supabase.from("cases").select("*").order("updated_at", { ascending: false }),
-        supabase
-          .from("documents")
-          .select("*", { count: "exact", head: true })
-          .eq("status", "pending"),
-      ]);
+      const [{ data: caseRows }, { count: pendingDocs }, { data: refRows }, { data: appRows }] =
+        await Promise.all([
+          supabase.from("cases").select("*").order("updated_at", { ascending: false }),
+          supabase
+            .from("documents")
+            .select("*", { count: "exact", head: true })
+            .eq("status", "pending"),
+          supabase.from("referrals").select("*").order("created_at", { ascending: false }),
+          supabase
+            .from("public_applications")
+            .select("*")
+            .order("created_at", { ascending: false }),
+        ]);
 
       const rows = caseRows ?? [];
       setCases(rows);
       setDocsPendingReview(pendingDocs ?? 0);
+      setReferrals(refRows ?? []);
+      setApplications(appRows ?? []);
 
       const clientIds = [...new Set(rows.map((c) => c.client_id))];
       if (clientIds.length > 0) {
@@ -268,9 +288,144 @@ function AdminCasesPage() {
           </Table>
         </div>
 
+        <ReferralsSection referrals={referrals} />
+        <PublicApplicationsSection applications={applications} />
         <ReviewMessageSettings />
       </div>
     </section>
+  );
+}
+
+function ReferralsSection({ referrals }: { referrals: ReferralRow[] }) {
+  return (
+    <div className="bg-card rounded-2xl ring-1 ring-border overflow-hidden mt-8">
+      <div className="flex items-center gap-2 p-6 pb-4">
+        <Gift className="size-4 text-brand" />
+        <h2 className="text-sm font-semibold">Client referrals</h2>
+        <Badge variant="secondary" className="ml-1">
+          {referrals.length}
+        </Badge>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Referred client</TableHead>
+            <TableHead>Client contact</TableHead>
+            <TableHead>Referred by</TableHead>
+            <TableHead>Referrer contact</TableHead>
+            <TableHead>Date</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {referrals.map((r) => (
+            <TableRow key={r.id}>
+              <TableCell className="font-medium">{r.client_name}</TableCell>
+              <TableCell>
+                <div className="text-sm">{r.client_phone || "—"}</div>
+                <div className="text-xs text-muted-foreground">{r.client_email || ""}</div>
+              </TableCell>
+              <TableCell>{r.referrer_name}</TableCell>
+              <TableCell className="text-sm">{r.referrer_phone || "—"}</TableCell>
+              <TableCell className="text-xs text-muted-foreground">
+                {new Date(r.created_at).toLocaleDateString()}
+              </TableCell>
+            </TableRow>
+          ))}
+          {referrals.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-10">
+                No referrals yet.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function PublicApplicationsSection({ applications }: { applications: PublicApplicationRow[] }) {
+  const [open, setOpen] = useState<PublicApplicationRow | null>(null);
+  return (
+    <div className="bg-card rounded-2xl ring-1 ring-border overflow-hidden mt-8">
+      <div className="flex items-center gap-2 p-6 pb-4">
+        <Send className="size-4 text-brand" />
+        <h2 className="text-sm font-semibold">Online applications (no login)</h2>
+        <Badge variant="secondary" className="ml-1">
+          {applications.length}
+        </Badge>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Contact</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {applications.map((a) => (
+            <TableRow key={a.id}>
+              <TableCell className="font-medium">{a.full_name || "—"}</TableCell>
+              <TableCell>
+                <div className="text-sm">{a.phone || "—"}</div>
+                <div className="text-xs text-muted-foreground">{a.email || ""}</div>
+              </TableCell>
+              <TableCell className="text-sm">{a.mortgage_type || "—"}</TableCell>
+              <TableCell className="text-xs text-muted-foreground">
+                {new Date(a.created_at).toLocaleDateString()}
+              </TableCell>
+              <TableCell className="text-right">
+                <Button size="sm" variant="outline" onClick={() => setOpen(a)}>
+                  View
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+          {applications.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-10">
+                No online applications yet.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setOpen(null)}
+        >
+          <div
+            className="bg-background rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto ring-1 ring-border"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-background border-b border-border p-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">{open.full_name || "Application"}</h2>
+                <p className="text-xs text-muted-foreground">
+                  {open.email || "—"} · {open.phone || "—"} ·{" "}
+                  {new Date(open.created_at).toLocaleString()}
+                </p>
+              </div>
+              <button
+                onClick={() => setOpen(null)}
+                className="p-2 hover:bg-secondary rounded-lg"
+                aria-label="Close"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <FullInformationForm d={mergeDetails(open.details)} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

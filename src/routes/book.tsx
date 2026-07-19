@@ -3,6 +3,9 @@ import { Video, MapPin, Phone, ChevronLeft, ChevronRight } from "lucide-react";
 import advisorPortrait from "@/assets/advisor-portrait.jpg";
 
 export const Route = createFileRoute("/book")({
+  validateSearch: (search: Record<string, unknown>): { service?: string } => ({
+    service: typeof search.service === "string" ? search.service : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Book a Consultation · Fasttrack Mortgages" },
@@ -13,6 +16,7 @@ export const Route = createFileRoute("/book")({
 });
 
 function BookPage() {
+  const { service } = Route.useSearch();
   return (
     <section className="py-16">
       <div className="container-page grid lg:grid-cols-3 gap-8 max-w-6xl">
@@ -20,7 +24,16 @@ function BookPage() {
           <div>
             <div className="eyebrow mb-3 text-brand">Book a consultation</div>
             <h1 className="text-4xl font-semibold mb-4">45 minutes with a regulated advisor.</h1>
-            <p className="text-muted-foreground">Free, no obligation, and fully confidential. We'll follow up by email with a summary.</p>
+            {service && (
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-brand-soft text-brand px-3 py-1 text-[11px] font-semibold uppercase tracking-widest">
+                Enquiry: {service}
+              </div>
+            )}
+            <p className="text-muted-foreground">
+              {service
+                ? `Tell us about your ${service.toLowerCase()} needs. Free, no obligation, and fully confidential — we'll follow up by email with a summary.`
+                : "Free, no obligation, and fully confidential. We'll follow up by email with a summary."}
+            </p>
           </div>
           <div className="p-6 bg-card ring-1 ring-border rounded-2xl">
             <img src={advisorPortrait} alt="Your Fasttrack Mortgages adviser" className="size-16 rounded-full object-cover mb-4" width={800} height={1000} loading="lazy" />

@@ -19,6 +19,7 @@ import heroHome from "@/assets/hero-home.jpg";
 import familyLifestyle from "@/assets/family-lifestyle.jpg";
 import textureEmerald from "@/assets/texture-emerald.jpg";
 import { SectionHeading } from "@/components/site/section-heading";
+import { GetStartedHero } from "@/components/site/get-started-hero";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -38,73 +39,7 @@ function Home() {
   return (
     <>
       {/* HERO */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
-        <div className="container-page grid grid-cols-1 lg:grid-cols-12 gap-16 items-start relative">
-          <div className="lg:col-span-7 animate-fade-up">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-soft border border-brand/10 text-brand text-[11px] font-semibold uppercase tracking-widest mb-8">
-              <span className="size-1.5 rounded-full bg-brand animate-pulse-dot" />
-              FCA Regulated · Whole-of-market
-            </div>
-            <h1 className="text-5xl lg:text-7xl font-semibold leading-[0.98] text-foreground text-balance max-w-[18ch] mb-8">
-              Compare mortgage &amp; insurance solutions in minutes.
-            </h1>
-            <p className="text-lg text-muted-foreground text-pretty max-w-[52ch] mb-10 leading-relaxed">
-              Sophisticated lending and comprehensive protection through our regulated brokerage.
-              Transparent, rapid, and tailored to your portfolio — with 90+ lenders and 40+ insurers under one roof.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link to="/mortgages" className="btn-primary">
-                Get Mortgage Assessment <ArrowRight className="size-4" />
-              </Link>
-              <Link to="/compare" className="btn-secondary">Compare Insurance Quotes</Link>
-              <Link to="/book" className="btn-secondary">Book a Consultation</Link>
-            </div>
-            <div className="mt-16 pt-8 border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-6">
-              <Stat value="5.0★" label="Google rating" />
-              <Stat value="81" label="Client reviews" />
-              <Stat value="Est. 2013" label="Bradford-based" />
-              <Stat value="Whole" label="Of-market panel" />
-            </div>
-          </div>
-
-          {/* Eligibility Widget */}
-          <div className="lg:col-span-5 animate-fade-up [animation-delay:150ms]">
-            <div className="bg-secondary p-1 rounded-2xl ring-1 ring-border shadow-xl shadow-brand/5">
-              <div className="bg-card p-7 rounded-[calc(1rem-2px)]">
-                <h3 className="text-sm font-semibold mb-6 flex items-center justify-between">
-                  Eligibility Checker
-                  <span className="text-[10px] bg-brand-soft text-brand px-2 py-1 rounded-full uppercase tracking-wider font-semibold">
-                    Instant Result
-                  </span>
-                </h3>
-                <div className="space-y-6">
-                  <Slider label="Household Income" value="£85,000 / year" pct={66} />
-                  <Slider label="Available Deposit" value="£45,000" pct={28} />
-                  <Slider label="Target Property Value" value="£470,000" pct={72} />
-                  <div className="p-5 bg-brand-soft rounded-xl border border-brand/10">
-                    <div className="text-[11px] text-brand font-bold uppercase tracking-widest mb-1">
-                      Estimated Borrowing
-                    </div>
-                    <div className="text-3xl font-semibold text-brand font-display">£425,000</div>
-                    <div className="text-xs text-muted-foreground mt-2">
-                      Monthly repayment est. <span className="font-semibold text-foreground">£1,840</span> at 4.12% APR
-                    </div>
-                  </div>
-                  <Link to="/mortgages" className="block w-full text-center py-3 bg-ink text-primary-foreground text-sm font-medium rounded-lg hover:bg-ink/90 transition-colors">
-                    Full Eligibility Report
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* subtle texture bg */}
-        <div
-          aria-hidden
-          className="absolute -z-10 -top-32 -right-32 size-[500px] rounded-full bg-brand/5 blur-[120px] pointer-events-none"
-        />
-      </section>
+      <GetStartedHero />
 
       {/* Partner marquee */}
       <section className="border-y border-border bg-secondary/40 py-6 overflow-hidden">
@@ -165,6 +100,8 @@ function Home() {
               <Link
                 key={p.title}
                 to="/mortgages"
+                search={{ type: p.title }}
+                hash="enquiry"
                 className="group bg-card rounded-2xl ring-1 ring-border hover:ring-brand/30 transition-all hover:shadow-md overflow-hidden"
               >
                 <div className="aspect-[16/10] overflow-hidden bg-secondary">
@@ -188,28 +125,37 @@ function Home() {
           <div className="mt-14">
             <div className="eyebrow mb-6 text-brand">More than mortgages</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {HOME_SERVICES.map((s) => (
-                <Link
-                  key={s.title}
-                  to={s.href}
-                  className="group bg-card rounded-2xl ring-1 ring-border hover:ring-brand/30 transition-all overflow-hidden"
-                >
-                  <div className="aspect-[16/10] overflow-hidden bg-secondary">
-                    <img
-                      src={s.img}
-                      alt={s.title}
-                      loading="lazy"
-                      width={800}
-                      height={500}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <div className="text-sm font-semibold mb-1">{s.title}</div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{s.copy}</p>
-                  </div>
-                </Link>
-              ))}
+              {HOME_SERVICES.map((s) => {
+                const cardClass =
+                  "group bg-card rounded-2xl ring-1 ring-border hover:ring-brand/30 transition-all overflow-hidden";
+                const inner = (
+                  <>
+                    <div className="aspect-[16/10] overflow-hidden bg-secondary">
+                      <img
+                        src={s.img}
+                        alt={s.title}
+                        loading="lazy"
+                        width={800}
+                        height={500}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <div className="text-sm font-semibold mb-1">{s.title}</div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{s.copy}</p>
+                    </div>
+                  </>
+                );
+                return "to" in s && s.to ? (
+                  <Link key={s.title} to={s.to} className={cardClass}>
+                    {inner}
+                  </Link>
+                ) : (
+                  <Link key={s.title} to="/book" search={{ service: s.title }} className={cardClass}>
+                    {inner}
+                  </Link>
+                );
+              })}
             </div>
           </div>
 
@@ -474,20 +420,6 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-function Slider({ label, value, pct }: { label: string; value: string; pct: number }) {
-  return (
-    <div>
-      <label className="block text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
-        {label}
-      </label>
-      <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-        <div className="h-full bg-brand rounded-full" style={{ width: `${pct}%` }} />
-      </div>
-      <div className="mt-2 text-sm font-medium">{value}</div>
-    </div>
-  );
-}
-
 function ServiceCard({
   icon,
   title,
@@ -549,13 +481,13 @@ const HOME_PRODUCTS = [
 ];
 
 const HOME_SERVICES = [
-  { img: "/images/services/protection.jpg", title: "Protection & Insurance", copy: "Life, critical illness, income protection, and home cover.", href: "/insurance" as const },
-  { img: "/images/services/loans.jpg", title: "Personal Loans", copy: "Secured and unsecured loans compared across lenders.", href: "/mortgages" as const },
-  { img: "/images/services/commercial.jpg", title: "Commercial Mortgages", copy: "Finance for commercial premises and limited companies.", href: "/mortgages" as const },
-  { img: "/images/services/bridging.jpg", title: "Bridging Loans", copy: "Short-term finance to move quickly or bridge a sale.", href: "/mortgages" as const },
-  { img: "/images/services/wills.jpg", title: "Wills", copy: "Professionally drafted wills through trusted partners.", href: "/mortgages" as const },
-  { img: "/images/services/conveyancing.jpg", title: "Conveyancing", copy: "Reliable partners for the legal side of your move.", href: "/mortgages" as const },
-  { img: "/images/services/energy.jpg", title: "Heating & Saving Energy", copy: "Cut bills with insulation, heat pumps and solar — plus green finance and grants.", href: "/mortgages" as const },
+  { img: "/images/services/protection.jpg", title: "Protection & Insurance", copy: "Life, critical illness, income protection, and home cover.", to: "/insurance" as const },
+  { img: "/images/services/loans.jpg", title: "Personal Loans", copy: "Secured and unsecured loans compared across lenders." },
+  { img: "/images/services/commercial.jpg", title: "Commercial Mortgages", copy: "Finance for commercial premises and limited companies." },
+  { img: "/images/services/bridging.jpg", title: "Bridging Loans", copy: "Short-term finance to move quickly or bridge a sale." },
+  { img: "/images/services/wills.jpg", title: "Wills", copy: "Professionally drafted wills through trusted partners." },
+  { img: "/images/services/conveyancing.jpg", title: "Conveyancing", copy: "Reliable partners for the legal side of your move." },
+  { img: "/images/services/energy.jpg", title: "Heating & Saving Energy", copy: "Cut bills with insulation, heat pumps and solar — plus green finance and grants." },
 ];
 
 const PARTNERS = [

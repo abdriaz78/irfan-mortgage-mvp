@@ -1,9 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, HeartPulse, Shield, Activity, Home, Building2, Briefcase, CheckCircle2, X, Check } from "lucide-react";
 import { useState } from "react";
 import { calculateLeadScore, formatLeadScore, saveLead, type LeadData } from "@/lib/lead-scoring";
 
 export const Route = createFileRoute("/insurance")({
+  validateSearch: (search: Record<string, unknown>): { product?: string } => ({
+    product: typeof search.product === "string" ? search.product : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Insurance — Life, Income & Home Protection · Fasttrack Mortgages" },
@@ -14,21 +17,36 @@ export const Route = createFileRoute("/insurance")({
 });
 
 function InsurancePage() {
-  const [assessmentStarted, setAssessmentStarted] = useState(false);
+  const { product } = Route.useSearch();
+  const navigate = useNavigate();
+  const [manualStart, setManualStart] = useState(false);
+  const assessmentStarted = manualStart || !!product;
 
-  if (!assessmentStarted) {
+  if (assessmentStarted) {
     return (
-      <>
-        <section className="py-16 lg:py-24 border-b border-border">
-          <div className="container-page max-w-4xl">
-            <div className="eyebrow mb-4 text-brand">Insurance</div>
-            <h1 className="text-5xl md:text-6xl font-semibold text-balance mb-6 leading-[1.02]">
-              Cover that fits the life you've built.
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-[60ch] leading-relaxed">
-              Six protection products, one guided assessment. We identify coverage gaps in your lifestyle and match
-              you to the right insurer — not the one that pays us most.
-            </p>
+      <InsuranceAssessment
+        key={product ?? "manual"}
+        initialProduct={product}
+        onComplete={() => {
+          setManualStart(false);
+          if (product) navigate({ to: "/insurance", search: {} });
+        }}
+      />
+    );
+  }
+
+  return (
+    <>
+      <section className="py-16 lg:py-24 border-b border-border">
+        <div className="container-page max-w-4xl">
+          <div className="eyebrow mb-4 text-brand">Insurance</div>
+          <h1 className="text-5xl md:text-6xl font-semibold text-balance mb-6 leading-[1.02]">
+            Protect what matters most — the right cover, not the priciest.
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-[60ch] leading-relaxed">
+            Tell us a little about your circumstances and we'll match you to the cover you actually need, then
+            compare quotes across our panel of insurers. One short assessment, honest advice, no pressure.
+          </p>
           </div>
         </section>
 
@@ -46,7 +64,11 @@ function InsurancePage() {
                   <span className="text-[11px] uppercase tracking-widest font-semibold">
                     From <span className="text-foreground">£{p.from}/mo</span>
                   </span>
-                  <Link to="/compare" className="text-xs font-semibold text-brand inline-flex items-center gap-1">
+                  <Link
+                    to="/insurance"
+                    search={{ product: p.title }}
+                    className="text-xs font-semibold text-brand inline-flex items-center gap-1"
+                  >
                     Get quote <ArrowRight className="size-3" />
                   </Link>
                 </div>
@@ -79,7 +101,7 @@ function InsurancePage() {
             <div className="bg-card p-8 rounded-3xl ring-1 ring-border">
               <h3 className="font-semibold mb-6 text-center">Start Your Assessment</h3>
               <button
-                onClick={() => setAssessmentStarted(true)}
+                onClick={() => setManualStart(true)}
                 className="btn-primary w-full justify-center"
               >
                 Begin Assessment <ArrowRight className="size-4" />
@@ -104,19 +126,24 @@ function InsurancePage() {
           </div>
         </section>
       </>
-    );
-  }
-
-  return <InsuranceAssessment onComplete={() => setAssessmentStarted(false)} />;
+  );
 }
 
 // Insurance Assessment Component
-function InsuranceAssessment({ onComplete }: { onComplete: () => void }) {
+function InsuranceAssessment({
+  initialProduct,
+  onComplete,
+}: {
+  initialProduct?: string;
+  onComplete: () => void;
+}) {
   const [step, setStep] = useState(1);
   const [dependants, setDependants] = useState(2);
   const [mortgageExposure, setMortgageExposure] = useState("£150k – £400k");
   const [employment, setEmployment] = useState("Employed");
-  const [selectedProducts, setSelectedProducts] = useState<string[]>(["Life Insurance", "Income Protection"]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>(
+    initialProduct ? [initialProduct] : ["Life Insurance", "Income Protection"],
+  );
   const [submitted, setSubmitted] = useState(false);
   const [leadScore, setLeadScore] = useState<ReturnType<typeof calculateLeadScore> | null>(null);
 

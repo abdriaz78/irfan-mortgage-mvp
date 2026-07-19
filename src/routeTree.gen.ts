@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ResourcesRouteImport } from './routes/resources'
+import { Route as ReferRouteImport } from './routes/refer'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as MortgagesRouteImport } from './routes/mortgages'
 import { Route as LoginRouteImport } from './routes/login'
@@ -20,6 +21,7 @@ import { Route as ComplianceRouteImport } from './routes/compliance'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as BookRouteImport } from './routes/book'
+import { Route as ApplyRouteImport } from './routes/apply'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -42,6 +44,11 @@ const SignupRoute = SignupRouteImport.update({
 const ResourcesRoute = ResourcesRouteImport.update({
   id: '/resources',
   path: '/resources',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReferRoute = ReferRouteImport.update({
+  id: '/refer',
+  path: '/refer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalRoute = PortalRouteImport.update({
@@ -82,6 +89,11 @@ const ChatRoute = ChatRouteImport.update({
 const BookRoute = BookRouteImport.update({
   id: '/book',
   path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApplyRoute = ApplyRouteImport.update({
+  id: '/apply',
+  path: '/apply',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -129,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/apply': typeof ApplyRoute
   '/book': typeof BookRoute
   '/chat': typeof ChatRoute
   '/compare': typeof CompareRoute
@@ -137,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/mortgages': typeof MortgagesRoute
   '/portal': typeof PortalRouteWithChildren
+  '/refer': typeof ReferRoute
   '/resources': typeof ResourcesRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -149,6 +163,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/apply': typeof ApplyRoute
   '/book': typeof BookRoute
   '/chat': typeof ChatRoute
   '/compare': typeof CompareRoute
@@ -156,6 +171,7 @@ export interface FileRoutesByTo {
   '/insurance': typeof InsuranceRoute
   '/login': typeof LoginRoute
   '/mortgages': typeof MortgagesRoute
+  '/refer': typeof ReferRoute
   '/resources': typeof ResourcesRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -170,6 +186,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/apply': typeof ApplyRoute
   '/book': typeof BookRoute
   '/chat': typeof ChatRoute
   '/compare': typeof CompareRoute
@@ -178,6 +195,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/mortgages': typeof MortgagesRoute
   '/portal': typeof PortalRouteWithChildren
+  '/refer': typeof ReferRoute
   '/resources': typeof ResourcesRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -193,6 +211,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/apply'
     | '/book'
     | '/chat'
     | '/compare'
@@ -201,6 +220,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mortgages'
     | '/portal'
+    | '/refer'
     | '/resources'
     | '/signup'
     | '/sitemap.xml'
@@ -213,6 +233,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/apply'
     | '/book'
     | '/chat'
     | '/compare'
@@ -220,6 +241,7 @@ export interface FileRouteTypes {
     | '/insurance'
     | '/login'
     | '/mortgages'
+    | '/refer'
     | '/resources'
     | '/signup'
     | '/sitemap.xml'
@@ -233,6 +255,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/apply'
     | '/book'
     | '/chat'
     | '/compare'
@@ -241,6 +264,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mortgages'
     | '/portal'
+    | '/refer'
     | '/resources'
     | '/signup'
     | '/sitemap.xml'
@@ -255,6 +279,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
+  ApplyRoute: typeof ApplyRoute
   BookRoute: typeof BookRoute
   ChatRoute: typeof ChatRoute
   CompareRoute: typeof CompareRoute
@@ -263,6 +288,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MortgagesRoute: typeof MortgagesRoute
   PortalRoute: typeof PortalRouteWithChildren
+  ReferRoute: typeof ReferRoute
   ResourcesRoute: typeof ResourcesRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -289,6 +315,13 @@ declare module '@tanstack/react-router' {
       path: '/resources'
       fullPath: '/resources'
       preLoaderRoute: typeof ResourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refer': {
+      id: '/refer'
+      path: '/refer'
+      fullPath: '/refer'
+      preLoaderRoute: typeof ReferRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portal': {
@@ -345,6 +378,13 @@ declare module '@tanstack/react-router' {
       path: '/book'
       fullPath: '/book'
       preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apply': {
+      id: '/apply'
+      path: '/apply'
+      fullPath: '/apply'
+      preLoaderRoute: typeof ApplyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -437,6 +477,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
+  ApplyRoute: ApplyRoute,
   BookRoute: BookRoute,
   ChatRoute: ChatRoute,
   CompareRoute: CompareRoute,
@@ -445,6 +486,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MortgagesRoute: MortgagesRoute,
   PortalRoute: PortalRouteWithChildren,
+  ReferRoute: ReferRoute,
   ResourcesRoute: ResourcesRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

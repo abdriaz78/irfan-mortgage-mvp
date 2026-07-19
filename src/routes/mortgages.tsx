@@ -14,17 +14,30 @@ import {
 import { useState } from "react";
 import { calculateLeadScore, formatLeadScore, saveLead, type LeadData } from "@/lib/lead-scoring";
 
+export const MORTGAGE_TYPES = [
+  "First Time Buyer",
+  "Remortgage",
+  "Buy to Let",
+  "Home Mover",
+  "Right to Buy",
+  "Help to Buy",
+] as const;
+
 export const Route = createFileRoute("/mortgages")({
+  validateSearch: (search: Record<string, unknown>): { type?: string } => ({
+    type: typeof search.type === "string" ? search.type : undefined,
+  }),
   head: () => ({
     meta: [
-      { title: "Mortgages — Eligibility Checker & Calculators · Fasttrack Mortgages" },
-      { name: "description", content: "Instant mortgage eligibility, affordability, repayment, stamp duty, refinance and overpayment calculators. Whole-of-market advice from FCA-regulated brokers." },
+      { title: "Mortgages — Mortgage Finder & Calculators · Fasttrack Mortgages" },
+      { name: "description", content: "Tell us what you need and we'll search the whole market for your best-fit mortgage. Plus affordability, repayment, stamp duty, refinance and overpayment calculators." },
     ],
   }),
   component: MortgagesPage,
 });
 
 function MortgagesPage() {
+  const { type } = Route.useSearch();
   const [activeCalc, setActiveCalc] = useState<string | null>(null);
 
   return (
@@ -33,17 +46,19 @@ function MortgagesPage() {
         <div className="container-page max-w-4xl">
           <div className="eyebrow mb-4 text-brand">Mortgages</div>
           <h1 className="text-5xl md:text-6xl font-semibold text-balance mb-6 leading-[1.02]">
-            Know exactly what you can borrow — before you speak to a bank.
+            {type
+              ? `Looking for a ${type.toLowerCase()} mortgage? Let's find your fit.`
+              : "Know exactly what you can borrow — before you speak to a bank."}
           </h1>
           <p className="text-lg text-muted-foreground max-w-[60ch] leading-relaxed">
-            Our eligibility engine models your income, deposit, credit profile, and property against real lender
-            criteria across 90+ providers. No credit check. No commitment.
+            Answer a few quick questions and we'll search the whole market — across 90+ lenders — for the deal that
+            fits your circumstances. Free, no credit check, and no obligation.
           </p>
         </div>
       </section>
 
-      {/* Eligibility Checker Form */}
-      <EligibilityCheckerSection />
+      {/* Mortgage Finder Form */}
+      <EligibilityCheckerSection key={type ?? "any"} initialType={type} />
 
       
 
@@ -121,8 +136,13 @@ function MortgagesPage() {
                 <div className="p-7 flex flex-col flex-1">
                   <h3 className="text-xl font-semibold mb-2">{p.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed mb-5">{p.copy}</p>
-                  <Link to="/compare" className="mt-auto text-sm font-semibold text-brand inline-flex items-center gap-1 w-fit">
-                    Compare rates <ArrowRight className="size-3" />
+                  <Link
+                    to="/mortgages"
+                    search={{ type: p.title }}
+                    hash="enquiry"
+                    className="mt-auto text-sm font-semibold text-brand inline-flex items-center gap-1 w-fit"
+                  >
+                    Start your enquiry <ArrowRight className="size-3" />
                   </Link>
                 </div>
               </article>
@@ -183,9 +203,17 @@ function MortgagesPage() {
                 <div className="p-7 flex flex-col flex-1">
                   <h3 className="text-lg font-semibold mb-2">{s.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed mb-4">{s.copy}</p>
-                  {s.href && (
+                  {s.href ? (
                     <Link to={s.href} className="mt-auto text-sm font-semibold text-brand inline-flex items-center gap-1 w-fit">
                       Learn more <ArrowRight className="size-3" />
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/book"
+                      search={{ service: s.title }}
+                      className="mt-auto text-sm font-semibold text-brand inline-flex items-center gap-1 w-fit"
+                    >
+                      Enquire about this <ArrowRight className="size-3" />
                     </Link>
                   )}
                 </div>
@@ -238,8 +266,13 @@ function MiniStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-// Eligibility Checker Section Component
-function EligibilityCheckerSection() {
+// Mortgage Finder Section Component
+function EligibilityCheckerSection({ initialType }: { initialType?: string }) {
+  const [mortgageType, setMortgageType] = useState(
+    initialType && (MORTGAGE_TYPES as readonly string[]).includes(initialType)
+      ? initialType
+      : MORTGAGE_TYPES[0],
+  );
   const [income, setIncome] = useState(85000);
   const [partnerIncome, setPartnerIncome] = useState(42000);
   const [employmentStatus, setEmploymentStatus] = useState("Full-time Employed");
@@ -251,7 +284,7 @@ function EligibilityCheckerSection() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const leadData: LeadData = {
       annualIncome: income,
       partnerIncome: partnerIncome,
@@ -259,6 +292,7 @@ function EligibilityCheckerSection() {
       depositAmount: deposit,
       propertyValue: propertyValue,
       creditHistory: creditHistory,
+      mortgageType: mortgageType,
       timeline: "Next 1-3 months",
     };
 
@@ -359,15 +393,31 @@ function EligibilityCheckerSection() {
   }
 
   return (
-    <section className="py-16 lg:py-24">
+    <section id="enquiry" className="py-16 lg:py-24 scroll-mt-24">
       <div className="container-page grid lg:grid-cols-5 gap-10">
         <form onSubmit={handleSubmit} className="lg:col-span-3 bg-card p-8 rounded-3xl ring-1 ring-border">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-semibold">Eligibility Checker</h2>
-            <span className="text-[10px] font-mono text-muted-foreground">AUTOMATED LEAD SCORING</span>
+            <h2 className="text-2xl font-semibold">Mortgage Finder</h2>
+            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+              Free · No credit check
+            </span>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <label className="block text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                What do you need?
+              </label>
+              <select
+                value={mortgageType}
+                onChange={(e) => setMortgageType(e.target.value)}
+                className="w-full px-4 py-3 bg-secondary/60 border border-border rounded-lg text-sm focus:border-brand focus:outline-none transition-colors"
+              >
+                {MORTGAGE_TYPES.map((t) => (
+                  <option key={t}>{t}</option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
                 Annual Income
@@ -446,7 +496,7 @@ function EligibilityCheckerSection() {
           </div>
           <div className="mt-8 flex gap-3">
             <button type="submit" className="btn-primary">
-              Calculate & Score <ArrowRight className="size-4" />
+              Find my mortgage <ArrowRight className="size-4" />
             </button>
           </div>
         </form>
@@ -465,13 +515,13 @@ function EligibilityCheckerSection() {
           </div>
           <div className="p-6 bg-secondary rounded-2xl">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Check className="size-4 text-brand" /> What's Included
+              <Check className="size-4 text-brand" /> What you get
             </h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>✓ Automated lead scoring</li>
-              <li>✓ Personalized recommendations</li>
-              <li>✓ Advisor callback within 4 hours</li>
-              <li>✓ Mortgage options tailored to you</li>
+              <li>✓ A whole-of-market search across 90+ lenders</li>
+              <li>✓ A recommendation matched to your circumstances</li>
+              <li>✓ A dedicated adviser who calls you back</li>
+              <li>✓ Help with complex income or adverse credit</li>
             </ul>
           </div>
         </aside>

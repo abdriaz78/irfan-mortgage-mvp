@@ -6,9 +6,15 @@ export function SiteFooter() {
       <div className="container-page">
         <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-16">
           <div className="max-w-[44ch]">
-            <span className="text-lg font-semibold tracking-tight text-zinc-50 block mb-4 font-display">
-              Fasttrack Mortgages
-            </span>
+            <div className="inline-block rounded-xl bg-white p-4 mb-5">
+              <img
+                src="/images/logo-full.png"
+                alt="Fasttrack Mortgages — Where trust matters"
+                className="h-24 w-auto"
+                width={230}
+                height={180}
+              />
+            </div>
             <p className="text-sm leading-relaxed mb-4">
               Impartial, whole-of-market mortgage and protection advice — established 2013.
               An Appointed Representative of Connect IFA Ltd, which is authorised and regulated by the
